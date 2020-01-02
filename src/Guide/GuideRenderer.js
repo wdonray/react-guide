@@ -27,24 +27,28 @@ class GuideRenderer extends Component {
 
     static getDerivedStateFromProps(nextProps, prevState) {
         if (nextProps.guide.active && nextProps.guide.currentStep){
+            //Get the current steps element
             let step = document.getElementById(nextProps.guide.getCurrentStep().element);
+            //Check if we have actually moved to the next step and are not on same element
             if (prevState.currentStep && nextProps.guide.getCurrentStep() !== prevState.currentStep) {
+                //Grab the prev element and remove the added styles
                 let prevStep = document.getElementById(prevState.currentStep.element);
-                console.log(prevStep);
+                //Only issue I see with this is if the element had one of these styles we have effectively overwritten it
                 prevStep.style.pointerEvents = null;
                 prevStep.style.zIndex = null;
             }
+            //Add styles to the current element to make it clickable
             if (step) {
                 step.style.removeProperty('pointerEvents');
                 step.style.removeProperty('zIndex');
                 step.style.pointerEvents = 'auto';
                 step.style.zIndex = '9999';
             }
+            //Make entire page not clickable
             document.body.style.removeProperty('pointerEvents');
             document.body.style.pointerEvents = 'none';
         } else {
-            document.body.style.removeProperty('pointerEvents');
-            document.body.style.pointerEvents = 'auto';
+            document.body.style.pointerEvents = null;
         }
         return {
             active: nextProps.guide.active,

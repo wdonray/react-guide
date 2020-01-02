@@ -24,10 +24,7 @@ export class Guide {
     }
     //Active
     getActive = () => this.active;
-    setActive = (state) => {
-        console.log(state)
-        this.active = state
-    };
+    setActive = (state) => this.active = state;
     //Steps
     getSteps = () => this.steps;
     addStep = (step) => {
