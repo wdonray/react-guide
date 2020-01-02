@@ -15,16 +15,19 @@ export const ContentPosition =  {
     bottomRight: 9
 };
 
-export class GuideController {
-    constructor(active, steps, currentStep, prevStep) {
+export class Guide {
+    constructor(active, steps) {
         this.active = active;
         this.steps = steps;
-        this.currentStep = currentStep;
-        this.prevStep = prevStep;
+        this.currentStep = null;
+        this.prevStep = [];
     }
     //Active
     getActive = () => this.active;
-    setActive = (state) => this.active = state;
+    setActive = (state) => {
+        console.log(state)
+        this.active = state
+    };
     //Steps
     getSteps = () => this.steps;
     addStep = (step) => {
@@ -48,13 +51,18 @@ export class GuideController {
         }
     };
     nextStep = () => {
-        this.prevStep = this.steps[this.steps.length - 1];
+        this.prevStep.push(this.steps[this.steps.length - 1]);
         this.steps.pop();
-        this.currentStep = this.steps[this.steps.length - 1];
+        if (this.steps.length === 0) {
+            this.active = false;
+            this.currentStep = null;
+        } else {
+            this.currentStep = this.steps[this.steps.length - 1];
+        }
     };
     goToPrevStep = () => {
-        let value = this.prevStep;
-        this.prevStep = this.steps[this.steps.length - 1];
+        let value = this.prevStep[this.prevStep.length - 1];
+        this.prevStep.pop();
         this.steps.push(value);
         this.currentStep = value;
     };

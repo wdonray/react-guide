@@ -3,8 +3,14 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import * as serviceWorker from './serviceWorker';
 import GuideRenderer from "./Guide/GuideRenderer";
+import {ContentPosition, Guide, Step} from "./Guide/Guide";
 
-ReactDOM.render(<GuideRenderer />, document.getElementById('root'));
+let guide = new Guide(true, [],);
+guide.addStep(new Step('test1', 'This is test 1', ContentPosition.middle));
+guide.addStep(new Step('test2', 'This is test 2', ContentPosition.bottomMiddle));
+guide.addStep(new Step('test3', 'This is test 3', ContentPosition.topRight));
+
+ReactDOM.render(<GuideRenderer guide={guide} />, document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
