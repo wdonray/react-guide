@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {ContentPosition} from "./Guide";
-import {Button} from "@material-ui/core";
+import {Button, Grid, Radio} from "@material-ui/core";
 import {Close} from "@material-ui/icons"
 import img from "../Test/173-300x300.jpg"
 import './Guide.css'
@@ -38,7 +38,7 @@ class GuideRenderer extends Component {
     };
 
     static getDerivedStateFromProps(nextProps, prevState) {
-        if (nextProps.guide.active && nextProps.guide.currentStep){
+        if (nextProps.guide.active && nextProps.guide.currentStep) {
             //Get the current steps element
             let step = document.getElementById(nextProps.guide.getCurrentStep().element);
             //Check if we have actually moved to the next step and are not on same element
@@ -117,7 +117,13 @@ class GuideRenderer extends Component {
                 Hello
             </Button>
             <Button variant="contained"
-                    style={{marginLeft: '30px', zIndex: '9999', position: 'fixed', backgroundColor: 'white', pointerEvents: 'auto'}}
+                    style={{
+                        marginLeft: '30px',
+                        zIndex: '9999',
+                        position: 'fixed',
+                        backgroundColor: 'white',
+                        pointerEvents: 'auto'
+                    }}
                     onClick={() => {
                         this.state.guide.setActive(!this.state.guide.getActive());
                         this.setState({active: this.state.guide.getActive()});
@@ -157,7 +163,7 @@ class GuideRenderer extends Component {
                                 <Close/>
                             </Button>
                             {this.state.currentStep.content}
-                            <div>
+                            <div style={{display: 'flex'}}>
                                 <Button
                                     size={'large'}
                                     variant="contained"
@@ -172,6 +178,18 @@ class GuideRenderer extends Component {
                                 >
                                     Back
                                 </Button>
+                                <Grid container spacing={2}>
+                                    {
+                                        this.state.guide.getSteps().map((step) => {
+                                            if (step === this.state.currentStep) {
+                                                return <Radio key={step.element}
+                                                              value={step.element}
+                                                              checked={true}/>
+                                            }
+                                            return <Radio key={step.element} value={step.element} checked={false}/>
+                                        })
+                                    }
+                                </Grid>
                                 <Button
                                     size={'large'}
                                     variant="contained"

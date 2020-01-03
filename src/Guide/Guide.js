@@ -2,6 +2,8 @@ export function Step(element, content, contentPosition) {
     this.element = element;
     this.content = content;
     this.contentPosition = contentPosition;
+    this.dirty = false;
+    this.active = false;
 }
 export const ContentPosition =  {
     topLeft: 1,
@@ -40,6 +42,7 @@ export class Guide {
         }
         return this.currentStep;
     };
+    getPrevStep = () => this.prevStep;
     removeStep = (step) => {
         for (let i = 0; i < this.steps.length; i++) {
             if (this.steps[i] === step) {
