@@ -4,8 +4,8 @@ import {Button} from "@material-ui/core";
 import {Close} from "@material-ui/icons"
 import img from "../Test/173-300x300.jpg"
 import './Guide.css'
-//TODO: Finished Content Holder / Direction of steps? / If currentElement changes position update dimmer
-//TODO: Can only have one guide per render / Raise Events / Higher-order component / If ID is not found skip to next or raise error
+//TODO: Finished Content Holder
+//TODO: Can only have one guide per render / Raise Events / Higher-order component
 
 class GuideRenderer extends Component {
     constructor(props) {
@@ -21,9 +21,21 @@ class GuideRenderer extends Component {
     componentDidMount() {
         //Init
         if (this.state.guide) {
+            this.state.guide.currentStepCheck(this.state.guide.getSteps());
             this.setState({currentStep: this.state.guide.getCurrentStep()});
         }
+        this.interval = setInterval(this.setCurrentStep, 5000);
+        window.addEventListener('resize', this.setCurrentStep);
     }
+
+    componentWillUnmount() {
+        window.removeEventListener('resize', this.setCurrentStep);
+        clearInterval(this.interval);
+    }
+
+    setCurrentStep = () => {
+        this.setState({currentStep: this.state.guide.getCurrentStep()})
+    };
 
     static getDerivedStateFromProps(nextProps, prevState) {
         if (nextProps.guide.active && nextProps.guide.currentStep){
@@ -33,7 +45,7 @@ class GuideRenderer extends Component {
             if (prevState.currentStep && nextProps.guide.getCurrentStep() !== prevState.currentStep) {
                 //Grab the prev element and remove the added styles
                 let prevStep = document.getElementById(prevState.currentStep.element);
-                //Only issue I see with this is if the element had one of these styles we have effectively overwritten it
+                //TODO: Only issue I see with this is if the element had one of these styles we have effectively overwritten it
                 prevStep.style.pointerEvents = null;
                 prevStep.style.zIndex = null;
             }

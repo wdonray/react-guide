@@ -18,7 +18,7 @@ export const ContentPosition =  {
 export class Guide {
     constructor(active, steps) {
         this.active = active;
-        this.steps = steps;
+        this.steps = this.currentStepCheck(steps);
         this.currentStep = null;
         this.prevStep = [];
     }
@@ -54,6 +54,7 @@ export class Guide {
             this.active = false;
             this.currentStep = null;
         } else {
+            this.steps = this.currentStepCheck(this.steps);
             this.currentStep = this.steps[this.steps.length - 1];
         }
     };
@@ -63,4 +64,14 @@ export class Guide {
         this.steps.push(value);
         this.currentStep = value;
     };
+    currentStepCheck = (steps) => {
+        if (steps.length > 0) {
+            while(document.getElementById(steps[steps.length - 1].element) === null) {
+                console.log(`Element not found (${steps[steps.length - 1].element}), it has been removed from steps`);
+                steps.pop();
+            }
+        }
+        this.currentStep = steps[steps.length - 1];
+        return steps;
+    }
 }
