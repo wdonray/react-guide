@@ -20,9 +20,7 @@ export const ContentPosition =  {
 export class Guide {
     constructor(active, steps) {
         this.active = active;
-        this.steps = this.currentStepCheck(steps);
-        this.currentStep = null;
-        this.prevStep = [];
+        this.steps = steps;
     }
     //Active
     getActive = () => this.active;
@@ -30,51 +28,61 @@ export class Guide {
     //Steps
     getSteps = () => this.steps;
     addStep = (step) => {
-        this.steps.push(step);
-        this.currentStep = this.steps[this.steps.length - 1];
+        if (this.getSteps().length === 0) {
+            step.active = true;
+        }
+        this.getSteps().push(step);
     };
-    getCurrentStep = () => this.currentStep;
+    getCurrentStep = () => {
+        return this.getSteps().find(item => item.active)
+    };
+    getCurrentStepIndex = () => {
+        return this.getSteps().findIndex(item => item.active)
+    };
     gotToStep = (step) => {
-        let found = this.steps.find(item => item === step);
+        let found = this.getSteps().find(item => item === step);
         if (found) {
             this.currentStep = found;
             return this.currentStep;
         }
         return this.currentStep;
     };
-    getPrevStep = () => this.prevStep;
+    getPrevStep = () => {
+        return this.getSteps()[this.getSteps().findIndex(item => item.active) - 1];
+    };
     removeStep = (step) => {
-        for (let i = 0; i < this.steps.length; i++) {
-            if (this.steps[i] === step) {
-                this.steps.splice(i, 1);
+        for (let i = 0; i < this.getSteps().length; i++) {
+            if (this.getSteps()[i] === step) {
+                this.getSteps().splice(i, 1);
             }
         }
     };
     nextStep = () => {
-        this.prevStep.push(this.steps[this.steps.length - 1]);
-        this.steps.pop();
-        if (this.steps.length === 0) {
+        if (this.getCurrentStepIndex() >= this.getSteps().length) {
+            this.getCurrentStep().active = false;
             this.active = false;
-            this.currentStep = null;
         } else {
-            this.steps = this.currentStepCheck(this.steps);
-            this.currentStep = this.steps[this.steps.length - 1];
+            this.currentStepCheck(this.getSteps()[this.getCurrentStepIndex() + 1]).active = true;
+            this.getCurrentStep().active = false;
         }
+        console.log(this.getSteps())
     };
     goToPrevStep = () => {
-        let value = this.prevStep[this.prevStep.length - 1];
-        this.prevStep.pop();
-        this.steps.push(value);
-        this.currentStep = value;
-    };
-    currentStepCheck = (steps) => {
-        if (steps.length > 0) {
-            while(document.getElementById(steps[steps.length - 1].element) === null) {
-                console.log(`Element not found (${steps[steps.length - 1].element}), it has been removed from steps`);
-                steps.pop();
-            }
+        if (this.getCurrentStepIndex() >= 1) {
+            this.getCurrentStep().active = false;
+            this.currentStepCheck(this.getSteps()[this.getCurrentStepIndex() - 1]).active = true;
         }
-        this.currentStep = steps[steps.length - 1];
-        return steps;
+    };
+    currentStepCheck = (step) => {
+        let stepToTest = step;
+        // console.log(stepToTest)
+        while (document.getElementById(stepToTest.element) === null) {
+            let dirtyStep = this.getSteps().find(item => item === stepToTest);
+            dirtyStep.dirty = true;
+            dirtyStep.active = false;
+            console.log(`Element marked dirty: ${dirtyStep.element}`);
+            stepToTest = this.getSteps()[this.getSteps().findIndex(item => item === stepToTest) + 1];
+        }
+        return stepToTest;
     }
 }

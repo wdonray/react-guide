@@ -1,7 +1,7 @@
-import React, {Component} from 'react';
+import React, {Component, createRef} from 'react';
 import {ContentPosition} from "./Guide";
-import {Button, Grid, Radio} from "@material-ui/core";
-import {Close} from "@material-ui/icons"
+import {Button, Grid, Radio, IconButton} from "@material-ui/core";
+import {Close, ArrowLeft, ArrowRight, RadioButtonChecked, RadioButtonUnchecked} from "@material-ui/icons"
 import img from "../Test/173-300x300.jpg"
 import './Guide.css'
 //TODO: Finished Content Holder
@@ -10,6 +10,7 @@ import './Guide.css'
 class GuideRenderer extends Component {
     constructor(props) {
         super(props);
+        this.containerRef = createRef();
         this.state = {
             guide: props.guide,
             currentStep: null,
@@ -21,10 +22,9 @@ class GuideRenderer extends Component {
     componentDidMount() {
         //Init
         if (this.state.guide) {
-            this.state.guide.currentStepCheck(this.state.guide.getSteps());
-            this.setState({currentStep: this.state.guide.getCurrentStep()});
+            this.setCurrentStep();
         }
-        this.interval = setInterval(this.setCurrentStep, 5000);
+        this.interval = setInterval(this.setCurrentStep, 1000);
         window.addEventListener('resize', this.setCurrentStep);
     }
 
@@ -38,7 +38,7 @@ class GuideRenderer extends Component {
     };
 
     static getDerivedStateFromProps(nextProps, prevState) {
-        if (nextProps.guide.active && nextProps.guide.currentStep) {
+        if (nextProps.guide.active && nextProps.guide.getCurrentStep()) {
             //Get the current steps element
             let step = document.getElementById(nextProps.guide.getCurrentStep().element);
             //Check if we have actually moved to the next step and are not on same element
@@ -64,7 +64,7 @@ class GuideRenderer extends Component {
         }
         return {
             active: nextProps.guide.active,
-            currentStep: nextProps.guide.currentStep
+            currentStep: nextProps.guide.getCurrentStep()
         }
     };
 
@@ -144,30 +144,35 @@ class GuideRenderer extends Component {
                             top: document.getElementById(this.state.currentStep.element).offsetTop - 10,
                             left: document.getElementById(this.state.currentStep.element).offsetLeft - 10,
                         }}/>
+                        {/*Container*/}
                         <div
+                            ref={this.containerRef}
                             className={'container'}
                             style={{
                                 display: this.state.fade ? 'none' : 'flex',
                                 right: this.positionRight(this.state.currentStep.contentPosition),
-                                left: this.positionLeft(this.state.currentStep.contentPosition, document.getElementById(this.state.currentStep.element).offsetWidth),
+                                left: this.positionLeft(this.state.currentStep.contentPosition, this.containerRef.current ? this.containerRef.current.offsetWidth : 0),
                                 bottom: this.positionBottom(this.state.currentStep.contentPosition),
-                                top: this.positionTop(this.state.currentStep.contentPosition, document.getElementById(this.state.currentStep.element).offsetHeight),
+                                top: this.positionTop(this.state.currentStep.contentPosition, this.containerRef.current ? this.containerRef.current.offsetHeight : 0),
                             }}>
-                            <Button
-                                size={'small'}
-                                variant="contained"
-                                onClick={() => {
-                                    this.state.guide.setActive(!this.state.guide.getActive());
-                                    this.setState({active: this.state.guide.getActive()});
-                                }}>
-                                <Close/>
-                            </Button>
-                            {this.state.currentStep.content}
-                            <div style={{display: 'flex'}}>
-                                <Button
-                                    size={'large'}
-                                    variant="contained"
-                                    disabled={this.state.guide.prevStep.length === 0}
+                            <div style={{height: '25px'}}>
+                                <IconButton
+                                    style={{position: 'absolute', top: '0px', right: '0px'}}
+                                    size={'small'}
+                                    onClick={() => {
+                                        this.state.guide.setActive(!this.state.guide.getActive());
+                                        this.setState({active: this.state.guide.getActive()});
+                                    }}>
+                                    <Close/>
+                                </IconButton>
+                            </div>
+                            <div style={{textAlign: 'center', maxWidth: '600px'}}>
+                                {this.state.currentStep.content}
+                            </div>
+                            <div style={{display: 'flex', height: '35px', marginTop: '10px'}}>
+                                <IconButton
+                                    size={'small'}
+                                    disabled={this.state.guide.getCurrentStepIndex() === 0}
                                     onClick={() => {
                                         this.state.guide.goToPrevStep();
                                         this.setState({fade: true});
@@ -176,23 +181,21 @@ class GuideRenderer extends Component {
                                         }, 500)
                                     }}
                                 >
-                                    Back
-                                </Button>
-                                <Grid container spacing={2}>
+                                    <ArrowLeft/>
+                                </IconButton>
+                                <Grid style={{margin: '0 auto', width: 'auto'}} container spacing={2}>
                                     {
                                         this.state.guide.getSteps().map((step) => {
                                             if (step === this.state.currentStep) {
-                                                return <Radio key={step.element}
-                                                              value={step.element}
-                                                              checked={true}/>
+                                                return <Grid item key={step.element}> <RadioButtonChecked  color={'primary'}/> </Grid>
                                             }
-                                            return <Radio key={step.element} value={step.element} checked={false}/>
+                                            return <Grid item key={step.element}> <RadioButtonUnchecked color={step.dirty ? 'disabled' : 'action'}/> </Grid>
                                         })
                                     }
                                 </Grid>
-                                <Button
-                                    size={'large'}
-                                    variant="contained"
+                                <IconButton
+                                    style={{position: 'relative', right: '0px'}}
+                                    size={'small'}
                                     onClick={() => {
                                         this.state.guide.nextStep();
                                         this.setState({fade: true});
@@ -201,8 +204,8 @@ class GuideRenderer extends Component {
                                         }, 500)
                                     }}
                                 >
-                                    {this.state.guide.steps.length === 1 ? 'End' : 'Forward'}
-                                </Button>
+                                    <ArrowRight/>
+                                </IconButton>
                             </div>
                         </div>
                     </div> : null
