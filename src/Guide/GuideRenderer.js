@@ -2,8 +2,8 @@ import React, {Component, createRef} from 'react';
 import {ContentPosition} from "./Guide";
 import {Button, Grid, IconButton} from "@material-ui/core";
 import {Close, ArrowLeft, ArrowRight, RadioButtonChecked, RadioButtonUnchecked} from "@material-ui/icons"
-import img from "../Test/173-300x300.jpg"
-import './Guide.css'
+// import img from "../Test/173-300x300.jpg"
+import './GuideStyle.css'
 
 //TODO: Can only have one guide per render / Higher-order component
 
@@ -124,29 +124,29 @@ class GuideRenderer extends Component {
 
     render() {
         return <div>
-            <Button variant="contained" id={'test1'} style={{width: '100px', height: '300px'}}>
-                World
-            </Button>
-            <Button onClick={(e) => {
-                document.dispatchEvent(new Event('nextStep'));
-            }} variant="contained" style={{width: '200px', marginLeft: '30px'}} id={'test2'}>
-                Hello
-            </Button>
-            <Button variant="contained"
-                    style={{
-                        marginLeft: '30px',
-                        zIndex: '9999',
-                        position: 'fixed',
-                        backgroundColor: 'white',
-                        pointerEvents: 'auto'
-                    }}
-                    onClick={() => {
-                        this.state.guide.setActive(!this.state.guide.getActive());
-                        this.setState({active: this.state.guide.getActive()});
-                    }}>
-                Toggle Active
-            </Button>
-            <img id={'test3'} style={{position: 'absolute', bottom: '30px', right: '30px'}} src={img}/>
+            {/*<Button variant="contained" id={'test1'} style={{width: '100px', height: '300px'}}>*/}
+            {/*    World*/}
+            {/*</Button>*/}
+            {/*<Button onClick={(e) => {*/}
+            {/*    document.dispatchEvent(new Event('nextStep'));*/}
+            {/*}} variant="contained" style={{width: '200px', marginLeft: '30px'}} id={'test2'}>*/}
+            {/*    Hello*/}
+            {/*</Button>*/}
+            {/*<Button variant="contained"*/}
+            {/*        style={{*/}
+            {/*            marginLeft: '30px',*/}
+            {/*            zIndex: '9999',*/}
+            {/*            position: 'fixed',*/}
+            {/*            backgroundColor: 'white',*/}
+            {/*            pointerEvents: 'auto'*/}
+            {/*        }}*/}
+            {/*        onClick={() => {*/}
+            {/*            this.state.guide.setActive(!this.state.guide.getActive());*/}
+            {/*            this.setState({active: this.state.guide.getActive()});*/}
+            {/*        }}>*/}
+            {/*    Toggle Active*/}
+            {/*</Button>*/}
+            {/*<img id={'test3'} style={{position: 'absolute', bottom: '30px', right: '30px'}} src={img}/>*/}
             {/* DIMMER */}
             {
                 (this.state.guide &&
