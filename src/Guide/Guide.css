@@ -1,11 +1,13 @@
-.parent:active .container {
-    display: flex;
-    animation: fade-out .10ms;
-}
-
-.parent:not(:active) .container {
+.parent .container {
     display: flex;
     animation: fade-in .5s;
+    width: auto;
+    height: auto;
+}
+
+.parent:not(.container:active) .container {
+    display: flex;
+    animation: fade-out .5s;
     width: auto;
     height: auto;
 }
@@ -19,10 +21,6 @@
     pointer-events: auto;
     transition: all 0.5s;
 }
-
-/*body {*/
-/*    pointer-events: none;*/
-/*}*/
 
 .dimmer {
     box-shadow: 0 0 0 100vmax rgba(0, 0, 0, .6);

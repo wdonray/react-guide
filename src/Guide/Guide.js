@@ -24,7 +24,13 @@ export class Guide {
     }
     //Active
     getActive = () => this.active;
-    setActive = (state) => this.active = state;
+    setActive = (state, callback) => {
+        this.active = state;
+        if (callback) {
+            callback();
+        }
+    };
+
     //Steps
     getSteps = () => this.steps;
     addStep = (step) => {
@@ -57,7 +63,7 @@ export class Guide {
             }
         }
     };
-    nextStep = () => {
+    nextStep = (callback) => {
         if (this.getCurrentStepIndex() >= (this.getSteps().length - 1)) {
             this.getCurrentStep().active = false;
             this.active = false;
@@ -65,23 +71,29 @@ export class Guide {
             this.currentStepCheck(this.getSteps()[this.getCurrentStepIndex() + 1]).active = true;
             this.getCurrentStep().active = false;
         }
-        console.log(this.getSteps())
+        if (callback) {
+            callback()
+        }
     };
-    goToPrevStep = () => {
+    goToPrevStep = (callback) => {
         let index = this.getCurrentStepIndex();
         if (index >= 1) {
             this.getCurrentStep().active = false;
             this.currentStepCheck(this.getSteps()[index - 1], true).active = true;
         }
+        if (callback) {
+            callback()
+        }
     };
     currentStepCheck = (step, back) => {
         let stepToTest = step;
-        // console.log(stepToTest)
-        while (document.getElementById(stepToTest.element) === null) {
-            let dirtyStep = this.getSteps().find(item => item === stepToTest);
-            dirtyStep.dirty = true;
-            dirtyStep.active = false;
-            console.log(`Element marked dirty: ${dirtyStep.element}`);
+        while (stepToTest.dirty || document.getElementById(stepToTest.element) === null) {
+            if (!stepToTest.dirty) {
+                let dirtyStep = this.getSteps().find(item => item === stepToTest);
+                dirtyStep.dirty = true;
+                dirtyStep.active = false;
+                console.log(`Element marked dirty: ${dirtyStep.element}`);
+            }
             if (back) {
                 stepToTest = this.getSteps()[this.getSteps().findIndex(item => item === stepToTest) - 1];
             } else {

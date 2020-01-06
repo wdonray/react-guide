@@ -1,11 +1,11 @@
 import React, {Component, createRef} from 'react';
 import {ContentPosition} from "./Guide";
-import {Button, Grid, Radio, IconButton} from "@material-ui/core";
+import {Button, Grid, IconButton} from "@material-ui/core";
 import {Close, ArrowLeft, ArrowRight, RadioButtonChecked, RadioButtonUnchecked} from "@material-ui/icons"
 import img from "../Test/173-300x300.jpg"
 import './Guide.css'
-//TODO: Finished Content Holder
-//TODO: Can only have one guide per render / Raise Events / Higher-order component
+
+//TODO: Can only have one guide per render / Higher-order component
 
 class GuideRenderer extends Component {
     constructor(props) {
@@ -13,19 +13,33 @@ class GuideRenderer extends Component {
         this.containerRef = createRef();
         this.state = {
             guide: props.guide,
+            onNextStep: props.onNextStep,
+            onPrevStep: props.onPrevStep,
+            onStart: props.onStart,
+            onEnd: props.onEnd,
             currentStep: null,
             active: true,
             fade: false,
         };
+        document.addEventListener('nextStep', () => {
+            this.state.guide.nextStep(this.state.onNextStep);
+            this.setState({fade: true});
+            setTimeout(() => {
+                this.setState({fade: false});
+            }, 500)
+        })
     }
 
     componentDidMount() {
         //Init
-        if (this.state.guide) {
+        if (this.state.guide && this.state.guide.getActive()) {
+            if (this.state.onStart) {
+                this.state.onStart();
+            }
             this.setCurrentStep();
+            this.interval = setInterval(this.setCurrentStep, 1000);
+            window.addEventListener('resize', this.setCurrentStep);
         }
-        this.interval = setInterval(this.setCurrentStep, 1000);
-        window.addEventListener('resize', this.setCurrentStep);
     }
 
     componentWillUnmount() {
@@ -38,7 +52,7 @@ class GuideRenderer extends Component {
     };
 
     static getDerivedStateFromProps(nextProps, prevState) {
-        if (nextProps.guide.active && nextProps.guide.getCurrentStep()) {
+        if (nextProps.guide.getActive() && nextProps.guide.getCurrentStep()) {
             //Get the current steps element
             let step = document.getElementById(nextProps.guide.getCurrentStep().element);
             //Check if we have actually moved to the next step and are not on same element
@@ -63,7 +77,7 @@ class GuideRenderer extends Component {
             document.body.style.pointerEvents = null;
         }
         return {
-            active: nextProps.guide.active,
+            active: nextProps.guide.getActive(),
             currentStep: nextProps.guide.getCurrentStep()
         }
     };
@@ -113,7 +127,9 @@ class GuideRenderer extends Component {
             <Button variant="contained" id={'test1'} style={{width: '100px', height: '300px'}}>
                 World
             </Button>
-            <Button variant="contained" style={{width: '200px', marginLeft: '30px'}} id={'test2'}>
+            <Button onClick={(e) => {
+                document.dispatchEvent(new Event('nextStep'));
+            }} variant="contained" style={{width: '200px', marginLeft: '30px'}} id={'test2'}>
                 Hello
             </Button>
             <Button variant="contained"
@@ -160,7 +176,7 @@ class GuideRenderer extends Component {
                                     style={{position: 'absolute', top: '0px', right: '0px'}}
                                     size={'small'}
                                     onClick={() => {
-                                        this.state.guide.setActive(!this.state.guide.getActive());
+                                        this.state.guide.setActive(!this.state.guide.getActive(), this.state.onEnd);
                                         this.setState({active: this.state.guide.getActive()});
                                     }}>
                                     <Close/>
@@ -174,7 +190,7 @@ class GuideRenderer extends Component {
                                     size={'small'}
                                     disabled={this.state.guide.getCurrentStepIndex() === 0}
                                     onClick={() => {
-                                        this.state.guide.goToPrevStep();
+                                        this.state.guide.goToPrevStep(this.state.onPrevStep);
                                         this.setState({fade: true});
                                         setTimeout(() => {
                                             this.setState({fade: false});
@@ -197,7 +213,7 @@ class GuideRenderer extends Component {
                                     style={{position: 'relative', right: '0px'}}
                                     size={'small'}
                                     onClick={() => {
-                                        this.state.guide.nextStep();
+                                        this.state.guide.nextStep(this.state.onNextStep);
                                         this.setState({fade: true});
                                         setTimeout(() => {
                                             this.setState({fade: false});
