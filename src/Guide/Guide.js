@@ -58,7 +58,7 @@ export class Guide {
         }
     };
     nextStep = () => {
-        if (this.getCurrentStepIndex() >= this.getSteps().length) {
+        if (this.getCurrentStepIndex() >= (this.getSteps().length - 1)) {
             this.getCurrentStep().active = false;
             this.active = false;
         } else {
@@ -68,12 +68,13 @@ export class Guide {
         console.log(this.getSteps())
     };
     goToPrevStep = () => {
-        if (this.getCurrentStepIndex() >= 1) {
+        let index = this.getCurrentStepIndex();
+        if (index >= 1) {
             this.getCurrentStep().active = false;
-            this.currentStepCheck(this.getSteps()[this.getCurrentStepIndex() - 1]).active = true;
+            this.currentStepCheck(this.getSteps()[index - 1], true).active = true;
         }
     };
-    currentStepCheck = (step) => {
+    currentStepCheck = (step, back) => {
         let stepToTest = step;
         // console.log(stepToTest)
         while (document.getElementById(stepToTest.element) === null) {
@@ -81,7 +82,11 @@ export class Guide {
             dirtyStep.dirty = true;
             dirtyStep.active = false;
             console.log(`Element marked dirty: ${dirtyStep.element}`);
-            stepToTest = this.getSteps()[this.getSteps().findIndex(item => item === stepToTest) + 1];
+            if (back) {
+                stepToTest = this.getSteps()[this.getSteps().findIndex(item => item === stepToTest) - 1];
+            } else {
+                stepToTest = this.getSteps()[this.getSteps().findIndex(item => item === stepToTest) + 1];
+            }
         }
         return stepToTest;
     }
