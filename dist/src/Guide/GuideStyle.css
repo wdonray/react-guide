@@ -1,0 +1,50 @@
+.parent .container {
+    display: flex;
+    animation: fade-in .5s;
+    width: auto;
+    height: auto;
+}
+
+.parent:not(.container:active) .container {
+    display: flex;
+    animation: fade-out .5s;
+    width: auto;
+    height: auto;
+}
+
+.container {
+    position: fixed;
+    opacity: 1;
+    flex-direction: column;
+    z-index: 9999;
+    background-color: white;
+    pointer-events: auto;
+    transition: all 0.5s;
+}
+
+.dimmer {
+    box-shadow: 0 0 0 100vmax rgba(0, 0, 0, .6);
+    padding: 10px;
+    transition: all 0.5s;
+    position: fixed;
+    z-index: 9000;
+    pointer-events: auto;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fade-out {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}

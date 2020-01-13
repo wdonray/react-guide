@@ -98,7 +98,6 @@ class GuideRenderer extends React.Component {
                 step.style.removeProperty('zIndex');
                 step.style.pointerEvents = 'auto';
                 step.style.zIndex = '9999';
-                console.log({step, style: step.style})
             }
             //Make entire page not clickable
             document.body.style.removeProperty('pointerEvents');
@@ -177,7 +176,6 @@ class GuideRenderer extends React.Component {
             {/*        onClick={() => {*/}
             {/*            this.state.guide.setActive(!this.state.guide.getActive());*/}
             {/*            this.setState({active: this.state.guide.getActive()});*/}
-            {/*            console.log({State: this.state})*/}
             {/*        }}>*/}
             {/*    Toggle Active*/}
             {/*</Button>*/}
@@ -190,10 +188,10 @@ class GuideRenderer extends React.Component {
                     document.getElementById(this.state.currentStep.element) !== null) ?
                     <div className={'parent'}>
                         <div className={'dimmer'} style={{
-                            width: document.getElementById(this.state.currentStep.element).getBoundingClientRect().width,
-                            height: document.getElementById(this.state.currentStep.element).getBoundingClientRect().height,
-                            top: document.getElementById(this.state.currentStep.element).getBoundingClientRect().top,
-                            left: document.getElementById(this.state.currentStep.element).getBoundingClientRect().left,
+                            width: document.getElementById(this.state.currentStep.element).offsetWidth,
+                            height: document.getElementById(this.state.currentStep.element).offsetHeight,
+                            top: document.getElementById(this.state.currentStep.element).offsetTop - 10,
+                            left: document.getElementById(this.state.currentStep.element).offsetLeft - 10,
                         }}/>
                         {/*Container*/}
                         <div

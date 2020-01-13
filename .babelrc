@@ -1,0 +1,17 @@
+{
+  "plugins": [
+    "lodash",
+    "@babel/plugin-transform-react-jsx"
+  ],
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": {
+          "node": "current"
+        }
+      }
+    ],
+    "@babel/preset-react"
+  ]
+}
