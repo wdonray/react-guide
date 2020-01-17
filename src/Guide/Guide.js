@@ -69,7 +69,12 @@ function Guide(active, steps) {
             this.getCurrentStep().active = false;
             this.active = false;
         } else {
-            this.currentStepCheck(this.getSteps()[this.getCurrentStepIndex() + 1]).active = true;
+            let value = this.currentStepCheck(this.getSteps()[this.getCurrentStepIndex() + 1]);
+            if (value) {
+                value.active = true;
+            } else {
+                this.active = false;
+            }
             this.getCurrentStep().active = false;
         }
         if (callback) {
@@ -88,12 +93,13 @@ function Guide(active, steps) {
     };
     this.currentStepCheck = (step, back) => {
         let stepToTest = step;
-        while (stepToTest.dirty || document.getElementById(stepToTest.element) === null) {
+        while (stepToTest && document.getElementById(stepToTest.element) === null) {
             if (!stepToTest.dirty) {
                 let dirtyStep = this.getSteps().find(item => item === stepToTest);
                 dirtyStep.dirty = true;
                 dirtyStep.active = false;
-                console.log(`Element marked dirty: ${dirtyStep.element}`);
+                alert(`Element marked dirty: ${dirtyStep.element}`);
+                this.active = false;
             }
             if (back) {
                 stepToTest = this.getSteps()[this.getSteps().findIndex(item => item === stepToTest) - 1];

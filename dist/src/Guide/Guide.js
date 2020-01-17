@@ -97,7 +97,14 @@ function Guide(active, steps) {
       _this.getCurrentStep().active = false;
       _this.active = false;
     } else {
-      _this.currentStepCheck(_this.getSteps()[_this.getCurrentStepIndex() + 1]).active = true;
+      var value = _this.currentStepCheck(_this.getSteps()[_this.getCurrentStepIndex() + 1]);
+
+      if (value) {
+        value.active = true;
+      } else {
+        _this.active = false;
+      }
+
       _this.getCurrentStep().active = false;
     }
 
@@ -122,7 +129,7 @@ function Guide(active, steps) {
   this.currentStepCheck = function (step, back) {
     var stepToTest = step;
 
-    while (stepToTest.dirty || document.getElementById(stepToTest.element) === null) {
+    while (stepToTest && document.getElementById(stepToTest.element) === null) {
       if (!stepToTest.dirty) {
         var dirtyStep = _this.getSteps().find(function (item) {
           return item === stepToTest;
@@ -130,7 +137,8 @@ function Guide(active, steps) {
 
         dirtyStep.dirty = true;
         dirtyStep.active = false;
-        console.log("Element marked dirty: ".concat(dirtyStep.element));
+        alert("Element marked dirty: ".concat(dirtyStep.element));
+        _this.active = false;
       }
 
       if (back) {

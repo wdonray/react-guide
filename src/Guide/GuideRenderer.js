@@ -81,6 +81,7 @@ class GuideRenderer extends React.Component {
     };
 
     static getDerivedStateFromProps(nextProps, prevState) {
+        //TODO: IF on same step no need to do all of this again
         if (nextProps.guide.getActive() && nextProps.guide.getCurrentStep()) {
             //Get the current steps element
             let step = document.getElementById(nextProps.guide.getCurrentStep().element);
@@ -98,7 +99,6 @@ class GuideRenderer extends React.Component {
                 step.style.removeProperty('zIndex');
                 step.style.pointerEvents = 'auto';
                 step.style.zIndex = '9999';
-                console.log({step, style: step.style})
             }
             //Make entire page not clickable
             document.body.style.removeProperty('pointerEvents');
