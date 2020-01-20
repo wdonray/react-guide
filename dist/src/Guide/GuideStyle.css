@@ -13,13 +13,38 @@
 }
 
 .container {
+    border-radius:5px;
     position: fixed;
     opacity: 1;
     flex-direction: column;
     z-index: 9999;
-    background-color: white;
     pointer-events: auto;
     transition: all 0.5s;
+}
+
+.numberCircle {
+    display:inline-block;
+    border-radius:50%;
+    background-image: linear-gradient(to right bottom, #175ec8, #3966cf, #506fd6, #6278de, #7381e5);
+    color: black;
+    font-size:12px;
+}
+
+.numberCircle:before,
+.numberCircle:after {
+    content:'\200B';
+    display:inline-block;
+    line-height:0px;
+
+    padding-top:50%;
+    padding-bottom:50%;
+}
+
+.numberCircle:before {
+    padding-left:8px;
+}
+.numberCircle:after {
+    padding-right:8px;
 }
 
 .dimmer {

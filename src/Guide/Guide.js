@@ -1,9 +1,10 @@
-function Step(element, content, contentPosition) {
+function Step(element, contentPosition, disableNavigation, content) {
     this.element = element;
     this.content = content;
     this.contentPosition = contentPosition;
     this.dirty = false;
     this.active = false;
+    this.disableNavigation = disableNavigation;
 }
 
 function ContentPosition() {
@@ -20,9 +21,11 @@ function ContentPosition() {
     }
 }
 
-function Guide(active) {
+function Guide(active, offset, disableBackNavigation) {
     this.active = active;
     this.steps = [];
+    this.offset = offset;
+    this.disableBackNavigation = disableBackNavigation;
     //Active
     this.getActive = () => this.active;
     this.setActive = (state, callback) => {
@@ -49,10 +52,10 @@ function Guide(active) {
     this.gotToStep = (step) => {
         let found = this.getSteps().find(item => item === step);
         if (found) {
-            this.currentStep = found;
-            return this.currentStep;
+            let currentStep = this.getCurrentStep();
+            this.currentStepCheck(found).active = true;
+            currentStep.active = false;
         }
-        return this.currentStep;
     };
     this.getPrevStep = () => {
         return this.getSteps()[this.getSteps().findIndex(item => item.active) - 1];
@@ -69,13 +72,14 @@ function Guide(active) {
             this.getCurrentStep().active = false;
             this.active = false;
         } else {
+            let currentStep = this.getCurrentStep();
             let value = this.currentStepCheck(this.getSteps()[this.getCurrentStepIndex() + 1]);
             if (value) {
                 value.active = true;
             } else {
                 this.active = false;
             }
-            this.getCurrentStep().active = false;
+            currentStep.active = false;
         }
         if (callback) {
             callback()

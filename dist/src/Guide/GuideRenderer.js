@@ -33,13 +33,6 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
-// let React = require('react');
-// let ContentPosition = require('./Guide');
-// let Button = require('@material-ui/core');
-// let Grid, IconButton = require('@material-ui/core');
-// let Close, ArrowLeft, ArrowRight, RadioButtonChecked, RadioButtonUnchecked = require('@material-ui/icons');
-// let img = require('../Test/173-300x300.jpg');
-// require('./GuideStyle.css');
 function ContentPosition() {
   return {
     topLeft: 1,
@@ -68,26 +61,24 @@ function (_React$Component) {
     _this.containerRef = _react.default.createRef();
     _this.state = {
       guide: props.guide,
-      onNextStep: props.onNextStep,
-      onPrevStep: props.onPrevStep,
-      onStart: props.onStart,
-      onEnd: props.onEnd,
       currentStep: null,
       active: true,
       fade: false
     };
     document.addEventListener('nextStep', function () {
-      _this.state.guide.nextStep(_this.state.onNextStep);
-
-      _this.setState({
-        fade: true
-      });
-
       setTimeout(function () {
+        _this.state.guide.nextStep(_this.props.onNextStep);
+
         _this.setState({
-          fade: false
+          fade: true
         });
-      }, 500);
+
+        setTimeout(function () {
+          _this.setState({
+            fade: false
+          });
+        }, 500);
+      }, 1000);
     });
     _this.setCurrentStep = _this.setCurrentStep.bind(_assertThisInitialized(_this));
     _this.getKeyByValue = _this.getKeyByValue.bind(_assertThisInitialized(_this));
@@ -103,8 +94,8 @@ function (_React$Component) {
     value: function componentDidMount() {
       //Init
       if (this.state.guide && this.state.guide.getActive()) {
-        if (this.state.onStart) {
-          this.state.onStart();
+        if (this.props.onStart) {
+          this.props.onStart();
         }
 
         this.setCurrentStep();
@@ -178,9 +169,6 @@ function (_React$Component) {
     }
   }, {
     key: "render",
-    // render() {
-    //     return null;
-    // }
     value: function render() {
       var _this2 = this;
 
@@ -188,11 +176,21 @@ function (_React$Component) {
         className: 'parent'
       }, _react.default.createElement("div", {
         className: 'dimmer',
+        onClick: function onClick() {
+          return document.getElementById(_this2.state.currentStep.element).click();
+        },
+        onMouseEnter: function onMouseEnter(e) {
+          document.getElementById(_this2.state.currentStep.element).focus();
+        },
+        onMouseLeave: function onMouseLeave(e) {
+          document.getElementById(_this2.state.currentStep.element).blur();
+        },
         style: {
           width: document.getElementById(this.state.currentStep.element).getBoundingClientRect().width,
           height: document.getElementById(this.state.currentStep.element).getBoundingClientRect().height,
-          top: document.getElementById(this.state.currentStep.element).getBoundingClientRect().top,
-          left: document.getElementById(this.state.currentStep.element).getBoundingClientRect().left
+          top: document.getElementById(this.state.currentStep.element).getBoundingClientRect().top - (this.state.guide.offset ? this.state.guide.offset : 0),
+          left: document.getElementById(this.state.currentStep.element).getBoundingClientRect().left - (this.state.guide.offset ? this.state.guide.offset : 0),
+          cursor: 'pointer'
         }
       }), _react.default.createElement("div", {
         ref: this.containerRef,
@@ -202,13 +200,23 @@ function (_React$Component) {
           right: this.positionRight(this.state.currentStep.contentPosition),
           left: this.positionLeft(this.state.currentStep.contentPosition, this.containerRef.current ? this.containerRef.current.offsetWidth : 0),
           bottom: this.positionBottom(this.state.currentStep.contentPosition),
-          top: this.positionTop(this.state.currentStep.contentPosition, this.containerRef.current ? this.containerRef.current.offsetHeight : 0)
+          top: this.positionTop(this.state.currentStep.contentPosition, this.containerRef.current ? this.containerRef.current.offsetHeight : 0),
+          backgroundColor: this.props.backgroundColor ? this.props.backgroundColor : 'white'
         }
       }, _react.default.createElement("div", {
         style: {
           height: '25px'
         }
-      }, _react.default.createElement(_core.IconButton, {
+      }, _react.default.createElement("div", {
+        style: {
+          position: 'absolute',
+          top: '0px',
+          left: '0px',
+          padding: '2px'
+        }
+      }, _react.default.createElement("div", {
+        className: 'numberCircle'
+      }, this.state.guide.getCurrentStepIndex() + 1)), _react.default.createElement(_core.IconButton, {
         style: {
           position: 'absolute',
           top: '0px',
@@ -216,7 +224,7 @@ function (_React$Component) {
         },
         size: 'small',
         onClick: function onClick() {
-          _this2.state.guide.setActive(!_this2.state.guide.getActive(), _this2.state.onEnd);
+          _this2.state.guide.setActive(!_this2.state.guide.getActive(), _this2.props.onEnd);
 
           _this2.setState({
             active: _this2.state.guide.getActive()
@@ -235,9 +243,9 @@ function (_React$Component) {
         }
       }, _react.default.createElement(_core.IconButton, {
         size: 'small',
-        disabled: this.state.guide.getCurrentStepIndex() === 0,
+        disabled: this.state.guide.disableBackNavigation || this.state.guide.getCurrentStepIndex() === 0,
         onClick: function onClick() {
-          _this2.state.guide.goToPrevStep(_this2.state.onPrevStep);
+          _this2.state.guide.goToPrevStep(_this2.props.onPrevStep);
 
           _this2.setState({
             fade: true
@@ -270,7 +278,22 @@ function (_React$Component) {
           item: true,
           key: step.element
         }, " ", _react.default.createElement(_icons.RadioButtonUnchecked, {
-          color: step.dirty ? 'disabled' : 'action'
+          color: step.dirty ? 'disabled' : 'action',
+          onClick: function onClick() {
+            if (!_this2.state.guide.disableBackNavigation) {
+              _this2.state.guide.gotToStep(step);
+
+              _this2.setState({
+                fade: true
+              });
+
+              setTimeout(function () {
+                _this2.setState({
+                  fade: false
+                });
+              }, 500);
+            }
+          }
         }), " ");
       })), _react.default.createElement(_core.IconButton, {
         style: {
@@ -278,8 +301,9 @@ function (_React$Component) {
           right: '0px'
         },
         size: 'small',
+        disabled: this.state.guide.getCurrentStep().disableNavigation,
         onClick: function onClick() {
-          _this2.state.guide.nextStep(_this2.state.onNextStep);
+          _this2.state.guide.nextStep(_this2.props.onNextStep);
 
           _this2.setState({
             fade: true
@@ -304,16 +328,16 @@ function (_React$Component) {
         if (prevState.currentStep && nextProps.guide.getCurrentStep() !== prevState.currentStep) {
           //Grab the prev element and remove the added styles
           var prevStep = document.getElementById(prevState.currentStep.element); //TODO: Only issue I see with this is if the element had one of these styles we have effectively overwritten it
+          // prevStep.style.pointerEvents = null;
 
-          prevStep.style.pointerEvents = null;
           prevStep.style.zIndex = null;
         } //Add styles to the current element to make it clickable
 
 
         if (step) {
           step.style.removeProperty('pointerEvents');
-          step.style.removeProperty('zIndex');
-          step.style.pointerEvents = 'auto';
+          step.style.removeProperty('zIndex'); //step.style.pointerEvents = 'auto';
+
           step.style.zIndex = '9999';
         } //Make entire page not clickable
 
@@ -334,7 +358,7 @@ function (_React$Component) {
   return GuideRenderer;
 }(_react.default.Component);
 
-var GuideWrapper = function GuideWrapper(WrappedComponent, guide, onNextStep, onPrevStep, onStart, onEnd) {
+var GuideWrapper = function GuideWrapper(WrappedComponent, guide, backgroundColor, onNextStep, onPrevStep, onStart, onEnd) {
   var HOC =
   /*#__PURE__*/
   function (_React$Component2) {
@@ -354,7 +378,8 @@ var GuideWrapper = function GuideWrapper(WrappedComponent, guide, onNextStep, on
           onNextStep: onNextStep,
           onPrevStep: onPrevStep,
           onStart: onStart,
-          onEnd: onEnd
+          onEnd: onEnd,
+          backgroundColor: backgroundColor
         }), _react.default.createElement(WrappedComponent, this.props));
       }
     }]);

@@ -1,11 +1,12 @@
 "use strict";
 
-function Step(element, content, contentPosition) {
+function Step(element, contentPosition, disableNavigation, content) {
   this.element = element;
   this.content = content;
   this.contentPosition = contentPosition;
   this.dirty = false;
   this.active = false;
+  this.disableNavigation = disableNavigation;
 }
 
 function ContentPosition() {
@@ -22,11 +23,13 @@ function ContentPosition() {
   };
 }
 
-function Guide(active) {
+function Guide(active, offset, disableBackNavigation) {
   var _this = this;
 
   this.active = active;
-  this.steps = []; //Active
+  this.steps = [];
+  this.offset = offset;
+  this.disableBackNavigation = disableBackNavigation; //Active
 
   this.getActive = function () {
     return _this.active;
@@ -71,11 +74,11 @@ function Guide(active) {
     });
 
     if (found) {
-      _this.currentStep = found;
-      return _this.currentStep;
-    }
+      var currentStep = _this.getCurrentStep();
 
-    return _this.currentStep;
+      _this.currentStepCheck(found).active = true;
+      currentStep.active = false;
+    }
   };
 
   this.getPrevStep = function () {
@@ -97,6 +100,8 @@ function Guide(active) {
       _this.getCurrentStep().active = false;
       _this.active = false;
     } else {
+      var currentStep = _this.getCurrentStep();
+
       var value = _this.currentStepCheck(_this.getSteps()[_this.getCurrentStepIndex() + 1]);
 
       if (value) {
@@ -105,7 +110,7 @@ function Guide(active) {
         _this.active = false;
       }
 
-      _this.getCurrentStep().active = false;
+      currentStep.active = false;
     }
 
     if (callback) {

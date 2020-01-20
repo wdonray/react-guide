@@ -1,17 +1,14 @@
 import React from 'react';
 // import {ContentPosition} from "./Guide";
-import {Button, Grid, IconButton} from "@material-ui/core";
-import {Close, ArrowLeft, ArrowRight, RadioButtonChecked, RadioButtonUnchecked} from "@material-ui/icons"
-// import img from "../Test/173-300x300.jpg"
+import {Grid, IconButton} from "@material-ui/core";
+import {
+    Close,
+    ArrowLeft,
+    ArrowRight,
+    RadioButtonChecked,
+    RadioButtonUnchecked,
+} from "@material-ui/icons"
 import './GuideStyle.css'
-
-// let React = require('react');
-// let ContentPosition = require('./Guide');
-// let Button = require('@material-ui/core');
-// let Grid, IconButton = require('@material-ui/core');
-// let Close, ArrowLeft, ArrowRight, RadioButtonChecked, RadioButtonUnchecked = require('@material-ui/icons');
-// let img = require('../Test/173-300x300.jpg');
-// require('./GuideStyle.css');
 
 function ContentPosition() {
     return {
@@ -33,20 +30,18 @@ class GuideRenderer extends React.Component {
         this.containerRef = React.createRef();
         this.state = {
             guide: props.guide,
-            onNextStep: props.onNextStep,
-            onPrevStep: props.onPrevStep,
-            onStart: props.onStart,
-            onEnd: props.onEnd,
             currentStep: null,
             active: true,
             fade: false,
         };
         document.addEventListener('nextStep', () => {
-            this.state.guide.nextStep(this.state.onNextStep);
-            this.setState({fade: true});
             setTimeout(() => {
-                this.setState({fade: false});
-            }, 500)
+                this.state.guide.nextStep(this.props.onNextStep);
+                this.setState({fade: true});
+                setTimeout(() => {
+                    this.setState({fade: false});
+                }, 500)
+            }, 1000);
         });
 
         this.setCurrentStep = this.setCurrentStep.bind(this);
@@ -60,8 +55,8 @@ class GuideRenderer extends React.Component {
     componentDidMount() {
         //Init
         if (this.state.guide && this.state.guide.getActive()) {
-            if (this.state.onStart) {
-                this.state.onStart();
+            if (this.props.onStart) {
+                this.props.onStart();
             }
             this.setCurrentStep();
             this.interval = setInterval(this.setCurrentStep, 1000);
@@ -88,14 +83,15 @@ class GuideRenderer extends React.Component {
                 //Grab the prev element and remove the added styles
                 let prevStep = document.getElementById(prevState.currentStep.element);
                 //TODO: Only issue I see with this is if the element had one of these styles we have effectively overwritten it
-                prevStep.style.pointerEvents = null;
+
+                // prevStep.style.pointerEvents = null;
                 prevStep.style.zIndex = null;
             }
             //Add styles to the current element to make it clickable
             if (step) {
                 step.style.removeProperty('pointerEvents');
                 step.style.removeProperty('zIndex');
-                step.style.pointerEvents = 'auto';
+                //step.style.pointerEvents = 'auto';
                 step.style.zIndex = '9999';
             }
             //Make entire page not clickable
@@ -114,7 +110,7 @@ class GuideRenderer extends React.Component {
         return Object.keys(object).find(key => object[key] === value);
     };
 
-    positionTop(contentPosition, elementHeight){
+    positionTop(contentPosition, elementHeight) {
         if (this.getKeyByValue(ContentPosition(), contentPosition).includes('top')) {
             return '1%';
         } else if (this.getKeyByValue(ContentPosition(), contentPosition).includes('middle')) {
@@ -123,14 +119,14 @@ class GuideRenderer extends React.Component {
         return 'auto';
     };
 
-    positionBottom(contentPosition){
+    positionBottom(contentPosition) {
         if (this.getKeyByValue(ContentPosition(), contentPosition).includes('bottom')) {
             return '1%';
         }
         return 'auto';
     };
 
-    positionLeft(contentPosition, elementWidth){
+    positionLeft(contentPosition, elementWidth) {
         if (this.getKeyByValue(ContentPosition(), contentPosition) === 'middleRight') {
             return null;
         } else if (this.getKeyByValue(ContentPosition(), contentPosition).includes('Left')) {
@@ -143,56 +139,36 @@ class GuideRenderer extends React.Component {
         return 'auto';
     };
 
-    positionRight(contentPosition){
+    positionRight(contentPosition) {
         if (this.getKeyByValue(ContentPosition(), contentPosition).includes('Right')) {
             return '1%';
         }
         return 'auto';
     };
 
-    // render() {
-    //     return null;
-    // }
-
     render() {
         return <div>
-            {/*<Button variant="contained" id={'test1'} style={{width: '100px', height: '300px'}}>*/}
-            {/*    World*/}
-            {/*</Button>*/}
-            {/*<Button onClick={(e) => {*/}
-            {/*    document.dispatchEvent(new Event('nextStep'));*/}
-            {/*}} variant="contained" style={{width: '200px', marginLeft: '30px'}} id={'test2'}>*/}
-            {/*    Hello*/}
-            {/*</Button>*/}
-            {/*<Button variant="contained"*/}
-            {/*        style={{*/}
-            {/*            marginLeft: '30px',*/}
-            {/*            zIndex: '9999',*/}
-            {/*            position: 'fixed',*/}
-            {/*            backgroundColor: 'white',*/}
-            {/*            pointerEvents: 'auto'*/}
-            {/*        }}*/}
-            {/*        onClick={() => {*/}
-            {/*            this.state.guide.setActive(!this.state.guide.getActive());*/}
-            {/*            this.setState({active: this.state.guide.getActive()});*/}
-            {/*            console.log({State: this.state})*/}
-            {/*        }}>*/}
-            {/*    Toggle Active*/}
-            {/*</Button>*/}
-            {/*<img id={'test3'} style={{position: 'absolute', bottom: '30px', right: '30px'}} src={img}/>*/}
-            {/*DIMMER*/}
             {
                 (this.state.guide &&
                     this.state.guide.getActive() &&
                     this.state.currentStep &&
                     document.getElementById(this.state.currentStep.element) !== null) ?
                     <div className={'parent'}>
-                        <div className={'dimmer'} style={{
-                            width: document.getElementById(this.state.currentStep.element).getBoundingClientRect().width,
-                            height: document.getElementById(this.state.currentStep.element).getBoundingClientRect().height,
-                            top: document.getElementById(this.state.currentStep.element).getBoundingClientRect().top,
-                            left: document.getElementById(this.state.currentStep.element).getBoundingClientRect().left,
-                        }}/>
+                        <div className={'dimmer'}
+                             onClick={() => document.getElementById(this.state.currentStep.element).click()}
+                             onMouseEnter={(e) => {
+                                 document.getElementById(this.state.currentStep.element).focus()
+                             }}
+                             onMouseLeave={(e) => {
+                                 document.getElementById(this.state.currentStep.element).blur()
+                             }}
+                             style={{
+                                 width: document.getElementById(this.state.currentStep.element).getBoundingClientRect().width,
+                                 height: document.getElementById(this.state.currentStep.element).getBoundingClientRect().height,
+                                 top: document.getElementById(this.state.currentStep.element).getBoundingClientRect().top - (this.state.guide.offset ? this.state.guide.offset : 0),
+                                 left: document.getElementById(this.state.currentStep.element).getBoundingClientRect().left - (this.state.guide.offset ? this.state.guide.offset : 0),
+                                 cursor: 'pointer'
+                             }}/>
                         {/*Container*/}
                         <div
                             ref={this.containerRef}
@@ -203,27 +179,34 @@ class GuideRenderer extends React.Component {
                                 left: this.positionLeft(this.state.currentStep.contentPosition, this.containerRef.current ? this.containerRef.current.offsetWidth : 0),
                                 bottom: this.positionBottom(this.state.currentStep.contentPosition),
                                 top: this.positionTop(this.state.currentStep.contentPosition, this.containerRef.current ? this.containerRef.current.offsetHeight : 0),
+                                backgroundColor: this.props.backgroundColor ? this.props.backgroundColor : 'white'
                             }}>
                             <div style={{height: '25px'}}>
+                                <div style={{
+                                    position: 'absolute', top: '0px', left: '0px', padding: '2px'
+                                }}>
+                                    <div className={'numberCircle'}>
+                                        {this.state.guide.getCurrentStepIndex() + 1}
+                                    </div>
+                                </div>
                                 <IconButton
                                     style={{position: 'absolute', top: '0px', right: '0px'}}
                                     size={'small'}
                                     onClick={() => {
-                                        this.state.guide.setActive(!this.state.guide.getActive(), this.state.onEnd);
+                                        this.state.guide.setActive(!this.state.guide.getActive(), this.props.onEnd);
                                         this.setState({active: this.state.guide.getActive()});
                                     }}>
                                     <Close/>
                                 </IconButton>
                             </div>
-                            <div style={{textAlign: 'center', maxWidth: '600px'}}>
-                                {this.state.currentStep.content}
+                            <div dangerouslySetInnerHTML={{__html: this.state.currentStep.content}} style={{textAlign: 'center', maxWidth: '600px'}}>
                             </div>
                             <div style={{display: 'flex', height: '35px', marginTop: '10px'}}>
                                 <IconButton
                                     size={'small'}
-                                    disabled={this.state.guide.getCurrentStepIndex() === 0}
+                                    disabled={this.state.guide.disableBackNavigation || this.state.guide.getCurrentStepIndex() === 0}
                                     onClick={() => {
-                                        this.state.guide.goToPrevStep(this.state.onPrevStep);
+                                        this.state.guide.goToPrevStep(this.props.onPrevStep);
                                         this.setState({fade: true});
                                         setTimeout(() => {
                                             this.setState({fade: false});
@@ -240,15 +223,25 @@ class GuideRenderer extends React.Component {
                                                     color={'primary'}/> </Grid>
                                             }
                                             return <Grid item key={step.element}> <RadioButtonUnchecked
-                                                color={step.dirty ? 'disabled' : 'action'}/> </Grid>
+                                                color={step.dirty ? 'disabled' : 'action'}
+                                                onClick={() => {
+                                                    if (!this.state.guide.disableBackNavigation) {
+                                                        this.state.guide.gotToStep(step)
+                                                        this.setState({fade: true});
+                                                        setTimeout(() => {
+                                                            this.setState({fade: false});
+                                                        }, 500)
+                                                    }
+                                                }}/> </Grid>
                                         })
                                     }
                                 </Grid>
                                 <IconButton
                                     style={{position: 'relative', right: '0px'}}
                                     size={'small'}
+                                    disabled={this.state.guide.getCurrentStep().disableNavigation}
                                     onClick={() => {
-                                        this.state.guide.nextStep(this.state.onNextStep);
+                                        this.state.guide.nextStep(this.props.onNextStep);
                                         this.setState({fade: true});
                                         setTimeout(() => {
                                             this.setState({fade: false});
@@ -265,15 +258,17 @@ class GuideRenderer extends React.Component {
     };
 }
 
-const GuideWrapper = (WrappedComponent, guide, onNextStep, onPrevStep, onStart, onEnd) => {
+const GuideWrapper = (WrappedComponent, guide, backgroundColor, onNextStep, onPrevStep, onStart, onEnd) => {
     class HOC extends React.Component {
         render() {
             return <React.Fragment>
-                <GuideRenderer guide={guide} onNextStep={onNextStep} onPrevStep={onPrevStep} onStart={onStart} onEnd={onEnd}/>
+                <GuideRenderer guide={guide} onNextStep={onNextStep} onPrevStep={onPrevStep} onStart={onStart}
+                               onEnd={onEnd} backgroundColor={backgroundColor}/>
                 <WrappedComponent {...this.props}/>
             </React.Fragment>
         }
     }
+
     return HOC;
 };
 
