@@ -27,8 +27,6 @@ function ContentPosition() {
     }
 }
 
-//TODO: Can only have one guide per render / Higher-order component
-
 class GuideRenderer extends React.Component {
     constructor(props) {
         super(props);
@@ -267,4 +265,16 @@ class GuideRenderer extends React.Component {
     };
 }
 
-export default GuideRenderer
+const GuideWrapper = (WrappedComponent, guide, onNextStep, onPrevStep, onStart, onEnd) => {
+    class HOC extends React.Component {
+        render() {
+            return <React.Fragment>
+                <GuideRenderer guide={guide} onNextStep={onNextStep} onPrevStep={onPrevStep} onStart={onStart} onEnd={onEnd}/>
+                <WrappedComponent {...this.props}/>
+            </React.Fragment>
+        }
+    }
+    return HOC;
+};
+
+export default GuideWrapper

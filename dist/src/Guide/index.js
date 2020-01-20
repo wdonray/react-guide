@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-Object.defineProperty(exports, "GuideRendererView", {
+Object.defineProperty(exports, "GuideWrapper", {
   enumerable: true,
   get: function get() {
     return _GuideRenderer.default;

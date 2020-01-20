@@ -22,11 +22,11 @@ function ContentPosition() {
   };
 }
 
-function Guide(active, steps) {
+function Guide(active) {
   var _this = this;
 
   this.active = active;
-  this.steps = steps; //Active
+  this.steps = []; //Active
 
   this.getActive = function () {
     return _this.active;

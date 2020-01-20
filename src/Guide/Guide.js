@@ -20,9 +20,9 @@ function ContentPosition() {
     }
 }
 
-function Guide(active, steps) {
+function Guide(active) {
     this.active = active;
-    this.steps = steps;
+    this.steps = [];
     //Active
     this.getActive = () => this.active;
     this.setActive = (state, callback) => {

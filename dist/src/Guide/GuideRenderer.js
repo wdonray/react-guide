@@ -52,8 +52,7 @@ function ContentPosition() {
     bottomMiddle: 8,
     bottomRight: 9
   };
-} //TODO: Can only have one guide per render / Higher-order component
-
+}
 
 var GuideRenderer =
 /*#__PURE__*/
@@ -335,7 +334,38 @@ function (_React$Component) {
   return GuideRenderer;
 }(_react.default.Component);
 
-var _default = GuideRenderer;
+var GuideWrapper = function GuideWrapper(WrappedComponent, guide, onNextStep, onPrevStep, onStart, onEnd) {
+  var HOC =
+  /*#__PURE__*/
+  function (_React$Component2) {
+    _inherits(HOC, _React$Component2);
+
+    function HOC() {
+      _classCallCheck(this, HOC);
+
+      return _possibleConstructorReturn(this, _getPrototypeOf(HOC).apply(this, arguments));
+    }
+
+    _createClass(HOC, [{
+      key: "render",
+      value: function render() {
+        return _react.default.createElement(_react.default.Fragment, null, _react.default.createElement(GuideRenderer, {
+          guide: guide,
+          onNextStep: onNextStep,
+          onPrevStep: onPrevStep,
+          onStart: onStart,
+          onEnd: onEnd
+        }), _react.default.createElement(WrappedComponent, this.props));
+      }
+    }]);
+
+    return HOC;
+  }(_react.default.Component);
+
+  return HOC;
+};
+
+var _default = GuideWrapper;
 exports.default = _default;
 
 //# sourceMappingURL=GuideRenderer.js.map
