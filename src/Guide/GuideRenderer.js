@@ -34,16 +34,11 @@ class GuideRenderer extends React.Component {
             active: true,
             fade: false,
         };
-        document.addEventListener('nextStep', () => {
-            setTimeout(() => {
-                this.state.guide.nextStep(this.props.onNextStep);
-                this.setState({fade: true});
-                setTimeout(() => {
-                    this.setState({fade: false});
-                }, 500)
-            }, 1000);
-        });
+        document.addEventListener('nextStep', () => this.nextStep(this.state.guide));
+        window.addEventListener('keydown', (event) => this.escKeyPress(event, this.state.guide));
 
+        this.escKeyPress = this.escKeyPress.bind(this);
+        this.nextStep = this.nextStep.bind(this);
         this.setCurrentStep = this.setCurrentStep.bind(this);
         this.getKeyByValue = this.getKeyByValue.bind(this);
         this.positionTop = this.positionTop.bind(this);
@@ -66,7 +61,27 @@ class GuideRenderer extends React.Component {
 
     componentWillUnmount() {
         window.removeEventListener('resize', this.setCurrentStep);
+        window.removeEventListener('keydown', this.escKeyPress);
+        document.removeEventListener('nextStep', this.nextStep);
         clearInterval(this.interval);
+    }
+
+    escKeyPress(event, guide) {
+        if (event.key === 'Escape') {
+            if (guide.getActive()) {
+                guide.setActive(false);
+            }
+        }
+    }
+
+    nextStep(guide) {
+        setTimeout(() => {
+            guide.nextStep(this.props.onNextStep);
+            this.setState({fade: true});
+            setTimeout(() => {
+                this.setState({fade: false});
+            }, 500)
+        }, 1000);
     }
 
     setCurrentStep() {
@@ -163,11 +178,16 @@ class GuideRenderer extends React.Component {
                                  document.getElementById(this.state.currentStep.element).blur()
                              }}
                              style={{
-                                 width: document.getElementById(this.state.currentStep.element).getBoundingClientRect().width,
-                                 height: document.getElementById(this.state.currentStep.element).getBoundingClientRect().height,
-                                 top: document.getElementById(this.state.currentStep.element).getBoundingClientRect().top - (this.state.guide.offset ? this.state.guide.offset : 0),
-                                 left: document.getElementById(this.state.currentStep.element).getBoundingClientRect().left - (this.state.guide.offset ? this.state.guide.offset : 0),
-                                 cursor: 'pointer'
+                                 width: document.getElementById(this.state.currentStep.element).getBoundingClientRect().width
+                                     + (this.state.guide.offset ? this.state.guide.offset : 0),
+                                 height: document.getElementById(this.state.currentStep.element).getBoundingClientRect().height
+                                     + (this.state.guide.offset ? this.state.guide.offset : 0),
+                                 top: document.getElementById(this.state.currentStep.element).getBoundingClientRect().top
+                                     - (this.state.guide.offset ? this.state.guide.offset : 0),
+                                 left: document.getElementById(this.state.currentStep.element).getBoundingClientRect().left
+                                     - (this.state.guide.offset ? this.state.guide.offset : 0),
+                                 cursor: this.state.currentStep.clickable ? 'pointer': 'default',
+                                 animation: this.props.blink ? 'blink 2s step-end infinite alternate' : null,
                              }}/>
                         {/*Container*/}
                         <div
@@ -176,9 +196,11 @@ class GuideRenderer extends React.Component {
                             style={{
                                 display: this.state.fade ? 'none' : 'flex',
                                 right: this.positionRight(this.state.currentStep.contentPosition),
-                                left: this.positionLeft(this.state.currentStep.contentPosition, this.containerRef.current ? this.containerRef.current.offsetWidth : 0),
+                                left: this.positionLeft(this.state.currentStep.contentPosition,
+                                    this.containerRef.current ? this.containerRef.current.offsetWidth : 0),
                                 bottom: this.positionBottom(this.state.currentStep.contentPosition),
-                                top: this.positionTop(this.state.currentStep.contentPosition, this.containerRef.current ? this.containerRef.current.offsetHeight : 0),
+                                top: this.positionTop(this.state.currentStep.contentPosition,
+                                    this.containerRef.current ? this.containerRef.current.offsetHeight : 0),
                                 backgroundColor: this.props.backgroundColor ? this.props.backgroundColor : 'white'
                             }}>
                             <div style={{height: '25px'}}>
@@ -199,7 +221,8 @@ class GuideRenderer extends React.Component {
                                     <Close/>
                                 </IconButton>
                             </div>
-                            <div dangerouslySetInnerHTML={{__html: this.state.currentStep.content}} style={{textAlign: 'center', maxWidth: '600px'}}>
+                            <div dangerouslySetInnerHTML={{__html: this.state.currentStep.content}}
+                                 style={{textAlign: 'center', maxWidth: '600px'}}>
                             </div>
                             <div style={{display: 'flex', height: '35px', marginTop: '10px'}}>
                                 <IconButton
@@ -258,12 +281,12 @@ class GuideRenderer extends React.Component {
     };
 }
 
-const GuideWrapper = (WrappedComponent, guide, backgroundColor, onNextStep, onPrevStep, onStart, onEnd) => {
+const GuideWrapper = (WrappedComponent, guide, backgroundColor, blink, onNextStep, onPrevStep, onStart, onEnd) => {
     class HOC extends React.Component {
         render() {
             return <React.Fragment>
                 <GuideRenderer guide={guide} onNextStep={onNextStep} onPrevStep={onPrevStep} onStart={onStart}
-                               onEnd={onEnd} backgroundColor={backgroundColor}/>
+                               onEnd={onEnd} backgroundColor={backgroundColor} blink={blink}/>
                 <WrappedComponent {...this.props}/>
             </React.Fragment>
         }

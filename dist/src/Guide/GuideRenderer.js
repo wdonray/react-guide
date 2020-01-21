@@ -66,20 +66,13 @@ function (_React$Component) {
       fade: false
     };
     document.addEventListener('nextStep', function () {
-      setTimeout(function () {
-        _this.state.guide.nextStep(_this.props.onNextStep);
-
-        _this.setState({
-          fade: true
-        });
-
-        setTimeout(function () {
-          _this.setState({
-            fade: false
-          });
-        }, 500);
-      }, 1000);
+      return _this.nextStep(_this.state.guide);
     });
+    window.addEventListener('keydown', function (event) {
+      return _this.escKeyPress(event, _this.state.guide);
+    });
+    _this.escKeyPress = _this.escKeyPress.bind(_assertThisInitialized(_this));
+    _this.nextStep = _this.nextStep.bind(_assertThisInitialized(_this));
     _this.setCurrentStep = _this.setCurrentStep.bind(_assertThisInitialized(_this));
     _this.getKeyByValue = _this.getKeyByValue.bind(_assertThisInitialized(_this));
     _this.positionTop = _this.positionTop.bind(_assertThisInitialized(_this));
@@ -107,7 +100,37 @@ function (_React$Component) {
     key: "componentWillUnmount",
     value: function componentWillUnmount() {
       window.removeEventListener('resize', this.setCurrentStep);
+      window.removeEventListener('keydown', this.escKeyPress);
+      document.removeEventListener('nextStep', this.nextStep);
       clearInterval(this.interval);
+    }
+  }, {
+    key: "escKeyPress",
+    value: function escKeyPress(event, guide) {
+      if (event.key === 'Escape') {
+        if (guide.getActive()) {
+          guide.setActive(false);
+        }
+      }
+    }
+  }, {
+    key: "nextStep",
+    value: function nextStep(guide) {
+      var _this2 = this;
+
+      setTimeout(function () {
+        guide.nextStep(_this2.props.onNextStep);
+
+        _this2.setState({
+          fade: true
+        });
+
+        setTimeout(function () {
+          _this2.setState({
+            fade: false
+          });
+        }, 500);
+      }, 1000);
     }
   }, {
     key: "setCurrentStep",
@@ -170,27 +193,28 @@ function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      var _this2 = this;
+      var _this3 = this;
 
       return _react.default.createElement("div", null, this.state.guide && this.state.guide.getActive() && this.state.currentStep && document.getElementById(this.state.currentStep.element) !== null ? _react.default.createElement("div", {
         className: 'parent'
       }, _react.default.createElement("div", {
         className: 'dimmer',
         onClick: function onClick() {
-          return document.getElementById(_this2.state.currentStep.element).click();
+          return document.getElementById(_this3.state.currentStep.element).click();
         },
         onMouseEnter: function onMouseEnter(e) {
-          document.getElementById(_this2.state.currentStep.element).focus();
+          document.getElementById(_this3.state.currentStep.element).focus();
         },
         onMouseLeave: function onMouseLeave(e) {
-          document.getElementById(_this2.state.currentStep.element).blur();
+          document.getElementById(_this3.state.currentStep.element).blur();
         },
         style: {
-          width: document.getElementById(this.state.currentStep.element).getBoundingClientRect().width,
-          height: document.getElementById(this.state.currentStep.element).getBoundingClientRect().height,
+          width: document.getElementById(this.state.currentStep.element).getBoundingClientRect().width + (this.state.guide.offset ? this.state.guide.offset : 0),
+          height: document.getElementById(this.state.currentStep.element).getBoundingClientRect().height + (this.state.guide.offset ? this.state.guide.offset : 0),
           top: document.getElementById(this.state.currentStep.element).getBoundingClientRect().top - (this.state.guide.offset ? this.state.guide.offset : 0),
           left: document.getElementById(this.state.currentStep.element).getBoundingClientRect().left - (this.state.guide.offset ? this.state.guide.offset : 0),
-          cursor: 'pointer'
+          cursor: this.state.currentStep.clickable ? 'pointer' : 'default',
+          animation: this.props.blink ? 'blink 2s step-end infinite alternate' : null
         }
       }), _react.default.createElement("div", {
         ref: this.containerRef,
@@ -224,18 +248,21 @@ function (_React$Component) {
         },
         size: 'small',
         onClick: function onClick() {
-          _this2.state.guide.setActive(!_this2.state.guide.getActive(), _this2.props.onEnd);
+          _this3.state.guide.setActive(!_this3.state.guide.getActive(), _this3.props.onEnd);
 
-          _this2.setState({
-            active: _this2.state.guide.getActive()
+          _this3.setState({
+            active: _this3.state.guide.getActive()
           });
         }
       }, _react.default.createElement(_icons.Close, null))), _react.default.createElement("div", {
+        dangerouslySetInnerHTML: {
+          __html: this.state.currentStep.content
+        },
         style: {
           textAlign: 'center',
           maxWidth: '600px'
         }
-      }, this.state.currentStep.content), _react.default.createElement("div", {
+      }), _react.default.createElement("div", {
         style: {
           display: 'flex',
           height: '35px',
@@ -245,14 +272,14 @@ function (_React$Component) {
         size: 'small',
         disabled: this.state.guide.disableBackNavigation || this.state.guide.getCurrentStepIndex() === 0,
         onClick: function onClick() {
-          _this2.state.guide.goToPrevStep(_this2.props.onPrevStep);
+          _this3.state.guide.goToPrevStep(_this3.props.onPrevStep);
 
-          _this2.setState({
+          _this3.setState({
             fade: true
           });
 
           setTimeout(function () {
-            _this2.setState({
+            _this3.setState({
               fade: false
             });
           }, 500);
@@ -265,7 +292,7 @@ function (_React$Component) {
         container: true,
         spacing: 2
       }, this.state.guide.getSteps().map(function (step) {
-        if (step === _this2.state.currentStep) {
+        if (step === _this3.state.currentStep) {
           return _react.default.createElement(_core.Grid, {
             item: true,
             key: step.element
@@ -280,15 +307,15 @@ function (_React$Component) {
         }, " ", _react.default.createElement(_icons.RadioButtonUnchecked, {
           color: step.dirty ? 'disabled' : 'action',
           onClick: function onClick() {
-            if (!_this2.state.guide.disableBackNavigation) {
-              _this2.state.guide.gotToStep(step);
+            if (!_this3.state.guide.disableBackNavigation) {
+              _this3.state.guide.gotToStep(step);
 
-              _this2.setState({
+              _this3.setState({
                 fade: true
               });
 
               setTimeout(function () {
-                _this2.setState({
+                _this3.setState({
                   fade: false
                 });
               }, 500);
@@ -303,14 +330,14 @@ function (_React$Component) {
         size: 'small',
         disabled: this.state.guide.getCurrentStep().disableNavigation,
         onClick: function onClick() {
-          _this2.state.guide.nextStep(_this2.props.onNextStep);
+          _this3.state.guide.nextStep(_this3.props.onNextStep);
 
-          _this2.setState({
+          _this3.setState({
             fade: true
           });
 
           setTimeout(function () {
-            _this2.setState({
+            _this3.setState({
               fade: false
             });
           }, 500);
@@ -358,7 +385,7 @@ function (_React$Component) {
   return GuideRenderer;
 }(_react.default.Component);
 
-var GuideWrapper = function GuideWrapper(WrappedComponent, guide, backgroundColor, onNextStep, onPrevStep, onStart, onEnd) {
+var GuideWrapper = function GuideWrapper(WrappedComponent, guide, backgroundColor, blink, onNextStep, onPrevStep, onStart, onEnd) {
   var HOC =
   /*#__PURE__*/
   function (_React$Component2) {
@@ -379,7 +406,8 @@ var GuideWrapper = function GuideWrapper(WrappedComponent, guide, backgroundColo
           onPrevStep: onPrevStep,
           onStart: onStart,
           onEnd: onEnd,
-          backgroundColor: backgroundColor
+          backgroundColor: backgroundColor,
+          blink: blink
         }), _react.default.createElement(WrappedComponent, this.props));
       }
     }]);

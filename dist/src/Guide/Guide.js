@@ -1,12 +1,13 @@
 "use strict";
 
-function Step(element, contentPosition, disableNavigation, content) {
+function Step(element, contentPosition, disableNavigation, clickable, content) {
   this.element = element;
   this.content = content;
   this.contentPosition = contentPosition;
   this.dirty = false;
   this.active = false;
   this.disableNavigation = disableNavigation;
+  this.clickable = clickable;
 }
 
 function ContentPosition() {
