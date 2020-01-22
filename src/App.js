@@ -11,7 +11,8 @@ guide.addStep({
     contentPosition: ContentPosition().middle,
     disableNavigation: false,
     clickable: false,
-    toolTip: null,
+    toolTip: "TESTING",
+    toolTipPlacement: "right-end",
     content: 'Lorem <strong>ipsum</strong> dolor sit amet, consectetur adipiscing elit. Suspendisse luctus lobortis ligula in tristique. Nam interdum sed augue ut feugiat. Cras ornare ultrices tellus non sollicitudin. Vivamus vitae fringilla urna. Pellentesque non lobortis tellus, vel viverra sem. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nulla facilisi. Proin suscipit justo eget mauris vulputate, sagittis gravida turpis dapibus. Duis lacinia et felis quis bibendum. Cras eros orci, auctor quis blandit nec, imperdiet non ante. Integer vitae porta magna. Sed interdum mauris ante, ac ullamcorper sapien dignissim eget. Vestibulum tempus dolor quis mollis sollicitudin. Aliquam non viverra.'
 });
 guide.addStep({

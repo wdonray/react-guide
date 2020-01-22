@@ -1,4 +1,4 @@
-function Step({element, contentPosition, disableNavigation, clickable, toolTip, content}) {
+function Step({element, contentPosition, disableNavigation, clickable, toolTip, toolTipPlacement, content}) {
     this.element = element;
     this.content = content;
     this.contentPosition = contentPosition;
@@ -7,6 +7,7 @@ function Step({element, contentPosition, disableNavigation, clickable, toolTip, 
     this.disableNavigation = disableNavigation;
     this.clickable = clickable;
     this.toolTip = toolTip;
+    this.toolTipPlacement = toolTipPlacement;
 }
 
 function ContentPosition() {

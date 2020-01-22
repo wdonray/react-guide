@@ -19,12 +19,14 @@ function ContentPosition() {
 }
 
 const CustomToolTip = withStyles({
+    popper: {
+        zIndex: 9999
+    },
     tooltip: {
         color: "white",
         backgroundColor: "black",
         zIndex: 9999,
         fontSize: "13px",
-        fontWeight: "bold"
     },
     arrow: {
         color: "black",
@@ -63,6 +65,9 @@ class GuideRenderer extends React.Component {
                 this.props.onStart();
             }
             this.setCurrentStep();
+            setTimeout(() => {
+                this.setState({toolTip: this.state.currentStep.toolTip})
+            }, this.props.toolTipDelay ? this.props.toolTipDelay : 3000);
             this.interval = setInterval(this.setCurrentStep, 1000);
             window.addEventListener('resize', this.setCurrentStep);
         }
@@ -134,7 +139,7 @@ class GuideRenderer extends React.Component {
         }
         return {
             active: nextProps.guide.getActive(),
-            currentStep: nextProps.guide.getCurrentStep()
+            currentStep: nextProps.guide.getCurrentStep(),
         }
     };
 
@@ -186,7 +191,10 @@ class GuideRenderer extends React.Component {
                     this.state.currentStep &&
                     document.getElementById(this.state.currentStep.element) !== null) ?
                     <div className={'parent'}>
-                        <CustomToolTip title={this.state.toolTip} open={typeof this.state.toolTip === "string"} arrow={true}>
+                        <CustomToolTip
+                            placement={typeof this.state.currentStep.toolTipPlacement === "string" ? this.state.currentStep.toolTipPlacement : 'bottom'}
+                            title={typeof this.state.toolTip === "string" ? this.state.toolTip : ''}
+                            open={typeof this.state.toolTip === "string"} arrow={true}>
                             <div className={'dimmer'}
                                  onClick={() => document.getElementById(this.state.currentStep.element).click()}
                                  onMouseEnter={(e) => {
@@ -290,12 +298,13 @@ class GuideRenderer extends React.Component {
     };
 }
 
-const GuideWrapper = (WrappedComponent, { guide, backgroundColor, blink, toolTipDelay, onNextStep, onPrevStep, onStart, onEnd }) => {
+const GuideWrapper = (WrappedComponent, {guide, backgroundColor, blink, toolTipDelay, onNextStep, onPrevStep, onStart, onEnd}) => {
     class HOC extends React.Component {
         render() {
             return <React.Fragment>
                 <GuideRenderer guide={guide} onNextStep={onNextStep} onPrevStep={onPrevStep} onStart={onStart}
-                               onEnd={onEnd} backgroundColor={backgroundColor} blink={blink} toolTipDelay={toolTipDelay}/>
+                               onEnd={onEnd} backgroundColor={backgroundColor} blink={blink}
+                               toolTipDelay={toolTipDelay}/>
                 <WrappedComponent {...this.props}/>
             </React.Fragment>
         }

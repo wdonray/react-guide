@@ -1,6 +1,13 @@
 "use strict";
 
-function Step(element, contentPosition, disableNavigation, clickable, content) {
+function Step(_ref) {
+  var element = _ref.element,
+      contentPosition = _ref.contentPosition,
+      disableNavigation = _ref.disableNavigation,
+      clickable = _ref.clickable,
+      toolTip = _ref.toolTip,
+      toolTipPlacement = _ref.toolTipPlacement,
+      content = _ref.content;
   this.element = element;
   this.content = content;
   this.contentPosition = contentPosition;
@@ -8,6 +15,8 @@ function Step(element, contentPosition, disableNavigation, clickable, content) {
   this.active = false;
   this.disableNavigation = disableNavigation;
   this.clickable = clickable;
+  this.toolTip = toolTip;
+  this.toolTipPlacement = toolTipPlacement;
 }
 
 function ContentPosition() {
@@ -24,9 +33,12 @@ function ContentPosition() {
   };
 }
 
-function Guide(active, offset, disableBackNavigation) {
+function Guide(_ref2) {
   var _this = this;
 
+  var active = _ref2.active,
+      offset = _ref2.offset,
+      disableBackNavigation = _ref2.disableBackNavigation;
   this.active = active;
   this.steps = [];
   this.offset = offset;
