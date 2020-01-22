@@ -1,4 +1,4 @@
-function Step(element, contentPosition, disableNavigation, clickable, content) {
+function Step({element, contentPosition, disableNavigation, clickable, toolTip, content}) {
     this.element = element;
     this.content = content;
     this.contentPosition = contentPosition;
@@ -6,6 +6,7 @@ function Step(element, contentPosition, disableNavigation, clickable, content) {
     this.active = false;
     this.disableNavigation = disableNavigation;
     this.clickable = clickable;
+    this.toolTip = toolTip;
 }
 
 function ContentPosition() {
@@ -22,7 +23,7 @@ function ContentPosition() {
     }
 }
 
-function Guide(active, offset, disableBackNavigation) {
+function Guide({active, offset, disableBackNavigation}) {
     this.active = active;
     this.steps = [];
     this.offset = offset;

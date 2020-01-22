@@ -1,13 +1,7 @@
 import React from 'react';
 // import {ContentPosition} from "./Guide";
-import {Grid, IconButton} from "@material-ui/core";
-import {
-    Close,
-    ArrowLeft,
-    ArrowRight,
-    RadioButtonChecked,
-    RadioButtonUnchecked,
-} from "@material-ui/icons"
+import {Grid, IconButton, Tooltip, withStyles} from "@material-ui/core";
+import {ArrowLeft, ArrowRight, Close, RadioButtonChecked, RadioButtonUnchecked,} from "@material-ui/icons"
 import './GuideStyle.css'
 
 function ContentPosition() {
@@ -24,19 +18,34 @@ function ContentPosition() {
     }
 }
 
+const CustomToolTip = withStyles({
+    tooltip: {
+        color: "white",
+        backgroundColor: "black",
+        zIndex: 9999,
+        fontSize: "13px",
+        fontWeight: "bold"
+    },
+    arrow: {
+        color: "black",
+        zIndex: 9999,
+    }
+})(Tooltip);
+
 class GuideRenderer extends React.Component {
     constructor(props) {
         super(props);
-        this.containerRef = React.createRef();
         this.state = {
             guide: props.guide,
             currentStep: null,
             active: true,
             fade: false,
+            toolTip: false,
         };
         document.addEventListener('nextStep', () => this.nextStep(this.state.guide));
         window.addEventListener('keydown', (event) => this.escKeyPress(event, this.state.guide));
 
+        this.stepChanged = this.stepChanged.bind(this);
         this.escKeyPress = this.escKeyPress.bind(this);
         this.nextStep = this.nextStep.bind(this);
         this.setCurrentStep = this.setCurrentStep.bind(this);
@@ -77,11 +86,19 @@ class GuideRenderer extends React.Component {
     nextStep(guide) {
         setTimeout(() => {
             guide.nextStep(this.props.onNextStep);
-            this.setState({fade: true});
-            setTimeout(() => {
-                this.setState({fade: false});
-            }, 500)
+            this.stepChanged();
         }, 1000);
+    }
+
+    stepChanged() {
+        this.setState({fade: true});
+        setTimeout(() => {
+            this.setState({fade: false});
+        }, 500)
+        this.setState({toolTip: false});
+        setTimeout(() => {
+            this.setState({toolTip: this.state.currentStep.toolTip})
+        }, this.props.toolTipDelay ? this.props.toolTipDelay : 3000)
     }
 
     setCurrentStep() {
@@ -169,38 +186,39 @@ class GuideRenderer extends React.Component {
                     this.state.currentStep &&
                     document.getElementById(this.state.currentStep.element) !== null) ?
                     <div className={'parent'}>
-                        <div className={'dimmer'}
-                             onClick={() => document.getElementById(this.state.currentStep.element).click()}
-                             onMouseEnter={(e) => {
-                                 document.getElementById(this.state.currentStep.element).focus()
-                             }}
-                             onMouseLeave={(e) => {
-                                 document.getElementById(this.state.currentStep.element).blur()
-                             }}
-                             style={{
-                                 width: document.getElementById(this.state.currentStep.element).getBoundingClientRect().width
-                                     + (this.state.guide.offset ? this.state.guide.offset : 0),
-                                 height: document.getElementById(this.state.currentStep.element).getBoundingClientRect().height
-                                     + (this.state.guide.offset ? this.state.guide.offset : 0),
-                                 top: document.getElementById(this.state.currentStep.element).getBoundingClientRect().top
-                                     - (this.state.guide.offset ? this.state.guide.offset : 0),
-                                 left: document.getElementById(this.state.currentStep.element).getBoundingClientRect().left
-                                     - (this.state.guide.offset ? this.state.guide.offset : 0),
-                                 cursor: this.state.currentStep.clickable ? 'pointer': 'default',
-                                 animation: this.props.blink ? 'blink 2s step-end infinite alternate' : null,
-                             }}/>
+                        <CustomToolTip title={this.state.toolTip} open={typeof this.state.toolTip === "string"} arrow={true}>
+                            <div className={'dimmer'}
+                                 onClick={() => document.getElementById(this.state.currentStep.element).click()}
+                                 onMouseEnter={(e) => {
+                                     document.getElementById(this.state.currentStep.element).focus()
+                                 }}
+                                 onMouseLeave={(e) => {
+                                     document.getElementById(this.state.currentStep.element).blur()
+                                 }}
+                                 style={{
+                                     width: document.getElementById(this.state.currentStep.element).getBoundingClientRect().width
+                                         + (this.state.guide.offset ? this.state.guide.offset : 0),
+                                     height: document.getElementById(this.state.currentStep.element).getBoundingClientRect().height
+                                         + (this.state.guide.offset ? this.state.guide.offset : 0),
+                                     top: document.getElementById(this.state.currentStep.element).getBoundingClientRect().top
+                                         - (this.state.guide.offset ? this.state.guide.offset : 0),
+                                     left: document.getElementById(this.state.currentStep.element).getBoundingClientRect().left
+                                         - (this.state.guide.offset ? this.state.guide.offset : 0),
+                                     cursor: this.state.currentStep.clickable ? 'pointer' : 'default',
+                                     animation: this.props.blink ? 'blink 2s step-end infinite alternate' : null,
+                                 }}
+                            />
+                        </CustomToolTip>
                         {/*Container*/}
                         <div
-                            ref={this.containerRef}
+                            id={'container'}
                             className={'container'}
                             style={{
                                 display: this.state.fade ? 'none' : 'flex',
                                 right: this.positionRight(this.state.currentStep.contentPosition),
-                                left: this.positionLeft(this.state.currentStep.contentPosition,
-                                    this.containerRef.current ? this.containerRef.current.offsetWidth : 0),
+                                left: this.positionLeft(this.state.currentStep.contentPosition, document.getElementById('container') ? document.getElementById('container').offsetWidth : 0),
                                 bottom: this.positionBottom(this.state.currentStep.contentPosition),
-                                top: this.positionTop(this.state.currentStep.contentPosition,
-                                    this.containerRef.current ? this.containerRef.current.offsetHeight : 0),
+                                top: this.positionTop(this.state.currentStep.contentPosition, document.getElementById('container') ? document.getElementById('container').offsetHeight : 0),
                                 backgroundColor: this.props.backgroundColor ? this.props.backgroundColor : 'white'
                             }}>
                             <div style={{height: '25px'}}>
@@ -230,10 +248,7 @@ class GuideRenderer extends React.Component {
                                     disabled={this.state.guide.disableBackNavigation || this.state.guide.getCurrentStepIndex() === 0}
                                     onClick={() => {
                                         this.state.guide.goToPrevStep(this.props.onPrevStep);
-                                        this.setState({fade: true});
-                                        setTimeout(() => {
-                                            this.setState({fade: false});
-                                        }, 500)
+                                        this.stepChanged()
                                     }}
                                 >
                                     <ArrowLeft/>
@@ -249,11 +264,8 @@ class GuideRenderer extends React.Component {
                                                 color={step.dirty ? 'disabled' : 'action'}
                                                 onClick={() => {
                                                     if (!this.state.guide.disableBackNavigation) {
-                                                        this.state.guide.gotToStep(step)
-                                                        this.setState({fade: true});
-                                                        setTimeout(() => {
-                                                            this.setState({fade: false});
-                                                        }, 500)
+                                                        this.state.guide.gotToStep(step);
+                                                        this.stepChanged();
                                                     }
                                                 }}/> </Grid>
                                         })
@@ -265,10 +277,7 @@ class GuideRenderer extends React.Component {
                                     disabled={this.state.guide.getCurrentStep().disableNavigation}
                                     onClick={() => {
                                         this.state.guide.nextStep(this.props.onNextStep);
-                                        this.setState({fade: true});
-                                        setTimeout(() => {
-                                            this.setState({fade: false});
-                                        }, 500)
+                                        this.stepChanged();
                                     }}
                                 >
                                     <ArrowRight/>
@@ -281,12 +290,12 @@ class GuideRenderer extends React.Component {
     };
 }
 
-const GuideWrapper = (WrappedComponent, guide, backgroundColor, blink, onNextStep, onPrevStep, onStart, onEnd) => {
+const GuideWrapper = (WrappedComponent, { guide, backgroundColor, blink, toolTipDelay, onNextStep, onPrevStep, onStart, onEnd }) => {
     class HOC extends React.Component {
         render() {
             return <React.Fragment>
                 <GuideRenderer guide={guide} onNextStep={onNextStep} onPrevStep={onPrevStep} onStart={onStart}
-                               onEnd={onEnd} backgroundColor={backgroundColor} blink={blink}/>
+                               onEnd={onEnd} backgroundColor={backgroundColor} blink={blink} toolTipDelay={toolTipDelay}/>
                 <WrappedComponent {...this.props}/>
             </React.Fragment>
         }
