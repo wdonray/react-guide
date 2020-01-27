@@ -103,10 +103,12 @@ class GuideRenderer extends React.Component {
     }
 
     nextStep(guide) {
-        setTimeout(() => {
-            guide.nextStep(this.props.onNextStep);
-            this.stepChanged();
-        }, 1000);
+        if (this.state.active) {
+            setTimeout(() => {
+                guide.nextStep(this.props.onNextStep);
+                this.stepChanged();
+            }, 1000);
+        }
     }
 
     stepChanged() {

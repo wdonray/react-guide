@@ -159,11 +159,13 @@ function (_React$Component) {
     value: function nextStep(guide) {
       var _this2 = this;
 
-      setTimeout(function () {
-        guide.nextStep(_this2.props.onNextStep);
+      if (this.state.active) {
+        setTimeout(function () {
+          guide.nextStep(_this2.props.onNextStep);
 
-        _this2.stepChanged();
-      }, 1000);
+          _this2.stepChanged();
+        }, 1000);
+      }
     }
   }, {
     key: "stepChanged",
