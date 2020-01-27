@@ -20,7 +20,7 @@ function ContentPosition() {
 
 const CustomToolTip = withStyles({
     popper: {
-        zIndex: 9999
+        zIndex: 9999,
     },
     tooltip: {
         color: "white",
@@ -65,11 +65,25 @@ class GuideRenderer extends React.Component {
                 this.props.onStart();
             }
             this.setCurrentStep();
-            setTimeout(() => {
-                this.setState({toolTip: this.state.currentStep.toolTip})
-            }, this.props.toolTipDelay ? this.props.toolTipDelay : 3000);
-            this.interval = setInterval(this.setCurrentStep, 1000);
+            this.interval = setInterval(this.setCurrentStep, 500);
             window.addEventListener('resize', this.setCurrentStep);
+        }
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        if (prevProps.guide.getActive() && prevState.active !== prevProps.guide.getActive()) {
+            if (prevProps.onStart) {
+                prevProps.onStart();
+            }
+            this.setCurrentStep();
+            clearInterval(this.interval);
+            this.interval = setInterval(this.setCurrentStep, 500);
+            window.addEventListener('resize', this.setCurrentStep);
+        } else if (!prevProps.guide.getActive() && prevState.active !== prevProps.guide.getActive()) {
+            clearInterval(this.interval)
+            if (prevProps.onEnd) {
+                prevProps.onEnd()
+            }
         }
     }
 
@@ -99,26 +113,22 @@ class GuideRenderer extends React.Component {
         this.setState({fade: true});
         setTimeout(() => {
             this.setState({fade: false});
-        }, 500)
-        this.setState({toolTip: false});
-        setTimeout(() => {
-            this.setState({toolTip: this.state.currentStep.toolTip})
-        }, this.props.toolTipDelay ? this.props.toolTipDelay : 3000)
+        }, 500);
     }
 
     setCurrentStep() {
-        this.setState({currentStep: this.state.guide.getCurrentStep()})
+        this.setState({currentStep: this.props.guide.getCurrentStep()})
     };
 
-    static getDerivedStateFromProps(nextProps, prevState) {
+    static getDerivedStateFromProps(props, state) {
         //TODO: IF on same step no need to do all of this again
-        if (nextProps.guide.getActive() && nextProps.guide.getCurrentStep()) {
+        if (props.guide.getActive() && props.guide.getCurrentStep()) {
             //Get the current steps element
-            let step = document.getElementById(nextProps.guide.getCurrentStep().element);
+            let step = document.getElementById(props.guide.getCurrentStep().element);
             //Check if we have actually moved to the next step and are not on same element
-            if (prevState.currentStep && nextProps.guide.getCurrentStep() !== prevState.currentStep) {
+            if (state.currentStep && props.guide.getCurrentStep() !== state.currentStep) {
                 //Grab the prev element and remove the added styles
-                let prevStep = document.getElementById(prevState.currentStep.element);
+                let prevStep = document.getElementById(state.currentStep.element);
                 //TODO: Only issue I see with this is if the element had one of these styles we have effectively overwritten it
 
                 // prevStep.style.pointerEvents = null;
@@ -138,8 +148,8 @@ class GuideRenderer extends React.Component {
             document.body.style.pointerEvents = null;
         }
         return {
-            active: nextProps.guide.getActive(),
-            currentStep: nextProps.guide.getCurrentStep(),
+            active: props.guide.getActive(),
+            currentStep: props.guide.getCurrentStep(),
         }
     };
 
@@ -187,14 +197,17 @@ class GuideRenderer extends React.Component {
         return <div>
             {
                 (this.state.guide &&
-                    this.state.guide.getActive() &&
+                    this.state.active &&
                     this.state.currentStep &&
                     document.getElementById(this.state.currentStep.element) !== null) ?
                     <div className={'parent'}>
                         <CustomToolTip
+                            enterDelay={this.props.toolTipEnterDelay ? this.props.toolTipEnterDelay : 500}
+                            leaveDelay={this.props.toolTipLeaveDelay ? this.props.toolTipLeaveDelay : 0}
                             placement={typeof this.state.currentStep.toolTipPlacement === "string" ? this.state.currentStep.toolTipPlacement : 'bottom'}
-                            title={typeof this.state.toolTip === "string" ? this.state.toolTip : ''}
-                            open={typeof this.state.toolTip === "string"} arrow={true}>
+                            title={typeof this.state.currentStep.toolTip === "string" ? this.state.currentStep.toolTip : ''}
+                            arrow={true}
+                        >
                             <div className={'dimmer'}
                                  onClick={() => document.getElementById(this.state.currentStep.element).click()}
                                  onMouseEnter={(e) => {
@@ -213,7 +226,7 @@ class GuideRenderer extends React.Component {
                                      left: document.getElementById(this.state.currentStep.element).getBoundingClientRect().left
                                          - (this.state.guide.offset ? this.state.guide.offset : 0),
                                      cursor: this.state.currentStep.clickable ? 'pointer' : 'default',
-                                     animation: this.props.blink ? 'blink 2s step-end infinite alternate' : null,
+                                     animation: this.props.blink ? 'blink 1s step-end infinite alternate' : null,
                                  }}
                             />
                         </CustomToolTip>
@@ -298,19 +311,42 @@ class GuideRenderer extends React.Component {
     };
 }
 
-const GuideWrapper = (WrappedComponent, {guide, backgroundColor, blink, toolTipDelay, onNextStep, onPrevStep, onStart, onEnd}) => {
-    class HOC extends React.Component {
+const GuideWrapper = (WrappedComponent, props) => {
+    return class extends React.Component {
+        constructor(props) {
+            super(props);
+            this.setBackgroundColor = this.setBackgroundColor.bind(this);
+            this.updateGuide = this.updateGuide.bind(this);
+            this.setBlink = this.setBlink.bind(this);
+        }
+
+        state = {
+            backgroundColor: props.backgroundColor,
+            guide: props.guide,
+            blink: props.blink
+        };
+
+        setBackgroundColor(color) {
+            this.setState({backgroundColor: color});
+        };
+
+        updateGuide(guide) {
+            this.setState({guide})
+        };
+
+        setBlink(blink) {
+            this.setState({blink})
+        };
+
         render() {
             return <React.Fragment>
-                <GuideRenderer guide={guide} onNextStep={onNextStep} onPrevStep={onPrevStep} onStart={onStart}
-                               onEnd={onEnd} backgroundColor={backgroundColor} blink={blink}
-                               toolTipDelay={toolTipDelay}/>
-                <WrappedComponent {...this.props}/>
+                <GuideRenderer {...props} blink={this.state.blink} guide={this.state.guide}
+                               backgroundColor={this.state.backgroundColor}/>
+                <WrappedComponent {...this.props} {...props} setBackgroundColor={this.setBackgroundColor}
+                                  updateGuide={this.updateGuide} setBlink={this.setBlink}/>
             </React.Fragment>
         }
     }
-
-    return HOC;
 };
 
 export default GuideWrapper

@@ -19,6 +19,23 @@ function Step(_ref) {
   this.toolTipPlacement = toolTipPlacement;
 }
 
+function ToolTipPlacement() {
+  return {
+    bottomEnd: 'bottom-end',
+    bottomStart: 'bottom-start',
+    bottom: 'bottom',
+    leftEnd: 'left-end',
+    leftStart: 'left-start',
+    left: 'left',
+    rightEnd: 'right-end',
+    rightStart: 'right-start',
+    right: 'right',
+    topEnd: 'top-end',
+    topStart: 'top-start',
+    top: 'top'
+  };
+}
+
 function ContentPosition() {
   return {
     topLeft: 1,
@@ -49,6 +66,10 @@ function Guide(_ref2) {
   };
 
   this.setActive = function (state, callback) {
+    if (state && !_this.getCurrentStep()) {
+      return;
+    }
+
     _this.active = state;
 
     if (callback) {
@@ -180,7 +201,8 @@ function Guide(_ref2) {
 module.exports = {
   Step: Step,
   ContentPosition: ContentPosition,
-  Guide: Guide
+  Guide: Guide,
+  ToolTipPlacement: ToolTipPlacement
 };
 
 //# sourceMappingURL=Guide.js.map

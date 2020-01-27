@@ -15,6 +15,10 @@ require("./GuideStyle.css");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -102,8 +106,6 @@ function (_React$Component) {
   _createClass(GuideRenderer, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this2 = this;
-
       //Init
       if (this.state.guide && this.state.guide.getActive()) {
         if (this.props.onStart) {
@@ -111,13 +113,28 @@ function (_React$Component) {
         }
 
         this.setCurrentStep();
-        setTimeout(function () {
-          _this2.setState({
-            toolTip: _this2.state.currentStep.toolTip
-          });
-        }, this.props.toolTipDelay ? this.props.toolTipDelay : 3000);
-        this.interval = setInterval(this.setCurrentStep, 1000);
+        this.interval = setInterval(this.setCurrentStep, 500);
         window.addEventListener('resize', this.setCurrentStep);
+      }
+    }
+  }, {
+    key: "componentDidUpdate",
+    value: function componentDidUpdate(prevProps, prevState, snapshot) {
+      if (prevProps.guide.getActive() && prevState.active !== prevProps.guide.getActive()) {
+        if (prevProps.onStart) {
+          prevProps.onStart();
+        }
+
+        this.setCurrentStep();
+        clearInterval(this.interval);
+        this.interval = setInterval(this.setCurrentStep, 500);
+        window.addEventListener('resize', this.setCurrentStep);
+      } else if (!prevProps.guide.getActive() && prevState.active !== prevProps.guide.getActive()) {
+        clearInterval(this.interval);
+
+        if (prevProps.onEnd) {
+          prevProps.onEnd();
+        }
       }
     }
   }, {
@@ -140,41 +157,33 @@ function (_React$Component) {
   }, {
     key: "nextStep",
     value: function nextStep(guide) {
-      var _this3 = this;
+      var _this2 = this;
 
       setTimeout(function () {
-        guide.nextStep(_this3.props.onNextStep);
+        guide.nextStep(_this2.props.onNextStep);
 
-        _this3.stepChanged();
+        _this2.stepChanged();
       }, 1000);
     }
   }, {
     key: "stepChanged",
     value: function stepChanged() {
-      var _this4 = this;
+      var _this3 = this;
 
       this.setState({
         fade: true
       });
       setTimeout(function () {
-        _this4.setState({
+        _this3.setState({
           fade: false
         });
       }, 500);
-      this.setState({
-        toolTip: false
-      });
-      setTimeout(function () {
-        _this4.setState({
-          toolTip: _this4.state.currentStep.toolTip
-        });
-      }, this.props.toolTipDelay ? this.props.toolTipDelay : 3000);
     }
   }, {
     key: "setCurrentStep",
     value: function setCurrentStep() {
       this.setState({
-        currentStep: this.state.guide.getCurrentStep()
+        currentStep: this.props.guide.getCurrentStep()
       });
     }
   }, {
@@ -231,25 +240,26 @@ function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      var _this5 = this;
+      var _this4 = this;
 
-      return _react.default.createElement("div", null, this.state.guide && this.state.guide.getActive() && this.state.currentStep && document.getElementById(this.state.currentStep.element) !== null ? _react.default.createElement("div", {
+      return _react.default.createElement("div", null, this.state.guide && this.state.active && this.state.currentStep && document.getElementById(this.state.currentStep.element) !== null ? _react.default.createElement("div", {
         className: 'parent'
       }, _react.default.createElement(CustomToolTip, {
+        enterDelay: this.props.toolTipEnterDelay ? this.props.toolTipEnterDelay : 500,
+        leaveDelay: this.props.toolTipLeaveDelay ? this.props.toolTipLeaveDelay : 0,
         placement: typeof this.state.currentStep.toolTipPlacement === "string" ? this.state.currentStep.toolTipPlacement : 'bottom',
-        title: typeof this.state.toolTip === "string" ? this.state.toolTip : '',
-        open: typeof this.state.toolTip === "string",
+        title: typeof this.state.currentStep.toolTip === "string" ? this.state.currentStep.toolTip : '',
         arrow: true
       }, _react.default.createElement("div", {
         className: 'dimmer',
         onClick: function onClick() {
-          return document.getElementById(_this5.state.currentStep.element).click();
+          return document.getElementById(_this4.state.currentStep.element).click();
         },
         onMouseEnter: function onMouseEnter(e) {
-          document.getElementById(_this5.state.currentStep.element).focus();
+          document.getElementById(_this4.state.currentStep.element).focus();
         },
         onMouseLeave: function onMouseLeave(e) {
-          document.getElementById(_this5.state.currentStep.element).blur();
+          document.getElementById(_this4.state.currentStep.element).blur();
         },
         style: {
           width: document.getElementById(this.state.currentStep.element).getBoundingClientRect().width + (this.state.guide.offset ? this.state.guide.offset : 0),
@@ -257,7 +267,7 @@ function (_React$Component) {
           top: document.getElementById(this.state.currentStep.element).getBoundingClientRect().top - (this.state.guide.offset ? this.state.guide.offset : 0),
           left: document.getElementById(this.state.currentStep.element).getBoundingClientRect().left - (this.state.guide.offset ? this.state.guide.offset : 0),
           cursor: this.state.currentStep.clickable ? 'pointer' : 'default',
-          animation: this.props.blink ? 'blink 2s step-end infinite alternate' : null
+          animation: this.props.blink ? 'blink 1s step-end infinite alternate' : null
         }
       })), _react.default.createElement("div", {
         id: 'container',
@@ -291,10 +301,10 @@ function (_React$Component) {
         },
         size: 'small',
         onClick: function onClick() {
-          _this5.state.guide.setActive(!_this5.state.guide.getActive(), _this5.props.onEnd);
+          _this4.state.guide.setActive(!_this4.state.guide.getActive(), _this4.props.onEnd);
 
-          _this5.setState({
-            active: _this5.state.guide.getActive()
+          _this4.setState({
+            active: _this4.state.guide.getActive()
           });
         }
       }, _react.default.createElement(_icons.Close, null))), _react.default.createElement("div", {
@@ -315,9 +325,9 @@ function (_React$Component) {
         size: 'small',
         disabled: this.state.guide.disableBackNavigation || this.state.guide.getCurrentStepIndex() === 0,
         onClick: function onClick() {
-          _this5.state.guide.goToPrevStep(_this5.props.onPrevStep);
+          _this4.state.guide.goToPrevStep(_this4.props.onPrevStep);
 
-          _this5.stepChanged();
+          _this4.stepChanged();
         }
       }, _react.default.createElement(_icons.ArrowLeft, null)), _react.default.createElement(_core.Grid, {
         style: {
@@ -327,7 +337,7 @@ function (_React$Component) {
         container: true,
         spacing: 2
       }, this.state.guide.getSteps().map(function (step) {
-        if (step === _this5.state.currentStep) {
+        if (step === _this4.state.currentStep) {
           return _react.default.createElement(_core.Grid, {
             item: true,
             key: step.element
@@ -342,10 +352,10 @@ function (_React$Component) {
         }, " ", _react.default.createElement(_icons.RadioButtonUnchecked, {
           color: step.dirty ? 'disabled' : 'action',
           onClick: function onClick() {
-            if (!_this5.state.guide.disableBackNavigation) {
-              _this5.state.guide.gotToStep(step);
+            if (!_this4.state.guide.disableBackNavigation) {
+              _this4.state.guide.gotToStep(step);
 
-              _this5.stepChanged();
+              _this4.stepChanged();
             }
           }
         }), " ");
@@ -357,23 +367,23 @@ function (_React$Component) {
         size: 'small',
         disabled: this.state.guide.getCurrentStep().disableNavigation,
         onClick: function onClick() {
-          _this5.state.guide.nextStep(_this5.props.onNextStep);
+          _this4.state.guide.nextStep(_this4.props.onNextStep);
 
-          _this5.stepChanged();
+          _this4.stepChanged();
         }
       }, _react.default.createElement(_icons.ArrowRight, null))))) : null);
     }
   }], [{
     key: "getDerivedStateFromProps",
-    value: function getDerivedStateFromProps(nextProps, prevState) {
+    value: function getDerivedStateFromProps(props, state) {
       //TODO: IF on same step no need to do all of this again
-      if (nextProps.guide.getActive() && nextProps.guide.getCurrentStep()) {
+      if (props.guide.getActive() && props.guide.getCurrentStep()) {
         //Get the current steps element
-        var step = document.getElementById(nextProps.guide.getCurrentStep().element); //Check if we have actually moved to the next step and are not on same element
+        var step = document.getElementById(props.guide.getCurrentStep().element); //Check if we have actually moved to the next step and are not on same element
 
-        if (prevState.currentStep && nextProps.guide.getCurrentStep() !== prevState.currentStep) {
+        if (state.currentStep && props.guide.getCurrentStep() !== state.currentStep) {
           //Grab the prev element and remove the added styles
-          var prevStep = document.getElementById(prevState.currentStep.element); //TODO: Only issue I see with this is if the element had one of these styles we have effectively overwritten it
+          var prevStep = document.getElementById(state.currentStep.element); //TODO: Only issue I see with this is if the element had one of these styles we have effectively overwritten it
           // prevStep.style.pointerEvents = null;
 
           prevStep.style.zIndex = null;
@@ -395,8 +405,8 @@ function (_React$Component) {
       }
 
       return {
-        active: nextProps.guide.getActive(),
-        currentStep: nextProps.guide.getCurrentStep()
+        active: props.guide.getActive(),
+        currentStep: props.guide.getCurrentStep()
       };
     }
   }]);
@@ -404,47 +414,71 @@ function (_React$Component) {
   return GuideRenderer;
 }(_react.default.Component);
 
-var GuideWrapper = function GuideWrapper(WrappedComponent, _ref) {
-  var guide = _ref.guide,
-      backgroundColor = _ref.backgroundColor,
-      blink = _ref.blink,
-      toolTipDelay = _ref.toolTipDelay,
-      onNextStep = _ref.onNextStep,
-      onPrevStep = _ref.onPrevStep,
-      onStart = _ref.onStart,
-      onEnd = _ref.onEnd;
+var GuideWrapper = function GuideWrapper(WrappedComponent, props) {
+  var _temp;
 
-  var HOC =
+  return _temp =
   /*#__PURE__*/
   function (_React$Component2) {
-    _inherits(HOC, _React$Component2);
+    _inherits(_temp, _React$Component2);
 
-    function HOC() {
-      _classCallCheck(this, HOC);
+    function _temp(_props) {
+      var _this5;
 
-      return _possibleConstructorReturn(this, _getPrototypeOf(HOC).apply(this, arguments));
+      _classCallCheck(this, _temp);
+
+      _this5 = _possibleConstructorReturn(this, _getPrototypeOf(_temp).call(this, _props));
+
+      _defineProperty(_assertThisInitialized(_this5), "state", {
+        backgroundColor: props.backgroundColor,
+        guide: props.guide,
+        blink: props.blink
+      });
+
+      _this5.setBackgroundColor = _this5.setBackgroundColor.bind(_assertThisInitialized(_this5));
+      _this5.updateGuide = _this5.updateGuide.bind(_assertThisInitialized(_this5));
+      _this5.setBlink = _this5.setBlink.bind(_assertThisInitialized(_this5));
+      return _this5;
     }
 
-    _createClass(HOC, [{
+    _createClass(_temp, [{
+      key: "setBackgroundColor",
+      value: function setBackgroundColor(color) {
+        this.setState({
+          backgroundColor: color
+        });
+      }
+    }, {
+      key: "updateGuide",
+      value: function updateGuide(guide) {
+        this.setState({
+          guide: guide
+        });
+      }
+    }, {
+      key: "setBlink",
+      value: function setBlink(blink) {
+        this.setState({
+          blink: blink
+        });
+      }
+    }, {
       key: "render",
       value: function render() {
-        return _react.default.createElement(_react.default.Fragment, null, _react.default.createElement(GuideRenderer, {
-          guide: guide,
-          onNextStep: onNextStep,
-          onPrevStep: onPrevStep,
-          onStart: onStart,
-          onEnd: onEnd,
-          backgroundColor: backgroundColor,
-          blink: blink,
-          toolTipDelay: toolTipDelay
-        }), _react.default.createElement(WrappedComponent, this.props));
+        return _react.default.createElement(_react.default.Fragment, null, _react.default.createElement(GuideRenderer, _extends({}, props, {
+          blink: this.state.blink,
+          guide: this.state.guide,
+          backgroundColor: this.state.backgroundColor
+        })), _react.default.createElement(WrappedComponent, _extends({}, this.props, props, {
+          setBackgroundColor: this.setBackgroundColor,
+          updateGuide: this.updateGuide,
+          setBlink: this.setBlink
+        })));
       }
     }]);
 
-    return HOC;
-  }(_react.default.Component);
-
-  return HOC;
+    return _temp;
+  }(_react.default.Component), _temp;
 };
 
 var _default = GuideWrapper;

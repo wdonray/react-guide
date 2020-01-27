@@ -10,6 +10,23 @@ function Step({element, contentPosition, disableNavigation, clickable, toolTip, 
     this.toolTipPlacement = toolTipPlacement;
 }
 
+function ToolTipPlacement() {
+    return {
+        bottomEnd: 'bottom-end',
+        bottomStart: 'bottom-start',
+        bottom: 'bottom',
+        leftEnd: 'left-end',
+        leftStart: 'left-start',
+        left: 'left',
+        rightEnd: 'right-end',
+        rightStart: 'right-start',
+        right: 'right',
+        topEnd: 'top-end',
+        topStart: 'top-start',
+        top: 'top'
+    }
+}
+
 function ContentPosition() {
     return {
         topLeft: 1,
@@ -32,6 +49,9 @@ function Guide({active, offset, disableBackNavigation}) {
     //Active
     this.getActive = () => this.active;
     this.setActive = (state, callback) => {
+        if (state && !this.getCurrentStep()) {
+            return;
+        }
         this.active = state;
         if (callback) {
             callback();
@@ -122,4 +142,4 @@ function Guide({active, offset, disableBackNavigation}) {
 //     return require('./GuideRenderer');
 // }
 
-module.exports = {Step: Step, ContentPosition: ContentPosition, Guide: Guide};
+module.exports = {Step: Step, ContentPosition: ContentPosition, Guide: Guide, ToolTipPlacement: ToolTipPlacement};
